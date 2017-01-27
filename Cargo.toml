@@ -1,0 +1,10 @@
+[package]
+name = "memcached-futures"
+version = "0.0.1"
+authors = ["svartalf <self@svartalf.info>"]
+
+[dependencies]
+futures = "*"
+tokio-core = "*"
+tokio-service = "*"
+tokio-proto = "*"
