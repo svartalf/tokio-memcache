@@ -28,6 +28,3 @@ impl Codec for BinaryCodec {
     }
 
 }
-
-#[cfg(test)]
-mod tests;
