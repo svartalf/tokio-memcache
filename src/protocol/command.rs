@@ -5,4 +5,5 @@
 pub enum Command {
     Get = 0x00,
     Set = 0x01,
+    Add = 0x02,
 }
