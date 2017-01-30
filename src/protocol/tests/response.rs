@@ -26,3 +26,33 @@ fn test_response_get_from_easybuf() {
     assert!(response.key().is_none());
     assert_eq!(response.value().unwrap(), b"World");
 }
+
+#[test]
+fn test_response_getk_from_easybuf() {
+    // I dunno why, but memcached doc have a mistake here,
+    // it says that instead of `0x0e` body length byte
+    // there should be a `0x09` which is wrong.
+    let mut buf = EasyBuf::from(vec![
+        0x81, 0x00, 0x00, 0x05,
+        0x04, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x0e,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x01,
+        0xde, 0xad, 0xbe, 0xef,
+        0x48, 0x65, 0x6c, 0x6c,
+        0x6f, 0x57, 0x6f, 0x72,
+        0x6c, 0x64,
+    ]);
+
+    let response = Response::try_from(&mut buf).unwrap().unwrap();
+
+    assert_eq!(*response.command(), 0x00);
+    assert_eq!(*response.status(), 0x0000);
+    assert_eq!(*response.data_type(), 0x00);
+
+    assert_eq!(response.extras().unwrap(), [0xde, 0xad, 0xbe, 0xef]);
+    assert_eq!(response.key().unwrap(), b"Hello");
+    assert_eq!(response.value().unwrap(), b"World");
+
+}

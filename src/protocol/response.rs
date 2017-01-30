@@ -28,7 +28,7 @@ use tokio_core::io::EasyBuf;
 
 #[derive(Default)]
 pub struct Response {
-    // We are not storing `magic` byte, because why? It is always the same and is not required by clients
+    // We are not storing `magic` byte, because it is always the same and is not required by clients
     opcode: u8,
     key_length: u16,
     extras_length: u8,
@@ -64,7 +64,7 @@ impl Response {
     pub fn extras(&self) -> Option<&[u8]> {
         if self.extras_length > 0 {
             let end = self.extras_length as usize;
-            return Some(&self.body[0..end]);
+            return Some(&self.body[..end]);
         }
         None
     }
@@ -72,7 +72,7 @@ impl Response {
     pub fn key(&self) -> Option<&[u8]> {
         if self.key_length > 0 {
             let start = self.extras_length as usize;
-            let end = self.key_length as usize;
+            let end = start + self.key_length as usize;
 
             return Some(&self.body[start..end]);
         }
@@ -107,18 +107,23 @@ impl Response {
         if magic != 0x81 {
             return Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid packet received"));
         }
-        let mut response = Response::default();
-        response.opcode = header.read_u8()?;
-        response.key_length = header.read_u16::<NetworkEndian>()?;
-        response.extras_length = header.read_u8()?;
-        response.data_type = header.read_u8()?;
-        response.status = header.read_u16::<NetworkEndian>()?;
-        response.body_length = header.read_u32::<NetworkEndian>()?;
-        response.opaque = header.read_u32::<NetworkEndian>()?;
-        response.cas = header.read_u64::<NetworkEndian>()?;
 
-        let body = raw.drain_to(response.body_length as usize);
-        response.body.extend_from_slice(body.as_slice());
+        let mut response = Response {
+            opcode: header.read_u8()?,
+            key_length: header.read_u16::<NetworkEndian>()?,
+            extras_length: header.read_u8()?,
+            data_type: header.read_u8()?,
+            status: header.read_u16::<NetworkEndian>()?,
+            body_length: header.read_u32::<NetworkEndian>()?,
+            opaque: header.read_u32::<NetworkEndian>()?,
+            cas: header.read_u64::<NetworkEndian>()?,
+            body: vec![],
+        };
+
+        if response.body_length > 0 {
+            let body = raw.drain_to(response.body_length as usize);
+            response.body.extend_from_slice(body.as_slice());
+        }
 
         Ok(Some(response))
     }
