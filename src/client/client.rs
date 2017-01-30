@@ -1,7 +1,6 @@
 use std::io;
 use std::boxed::Box;
 use std::net::SocketAddr;
-use std::default::Default;
 
 use tokio_proto::TcpClient;
 use tokio_core::net::TcpStream;

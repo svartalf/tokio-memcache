@@ -4,7 +4,7 @@ use std::fmt;
 use byteorder::{NetworkEndian, ReadBytesExt};
 use tokio_core::io::EasyBuf;
 
-use ::protocol::Command;
+// use ::protocol::Command;
 
 /*
      Byte/     0       |       1       |       2       |       3       |
@@ -28,7 +28,7 @@ use ::protocol::Command;
 
 #[derive(Default)]
 pub struct Response {
-    magic: u8,
+    // We are not storing `magic` byte, because why? It is always the same and is not required by clients
     opcode: u8,
     key_length: u16,
     extras_length: u8,
@@ -49,6 +49,46 @@ impl Response {
         &self.status
     }
 
+    pub fn data_type(&self) -> &u8 {
+        &self.data_type
+    }
+
+    pub fn opaque(&self) -> &u32 {
+        &self.opaque
+    }
+
+    pub fn cas(&self) -> &u64 {
+        &self.cas
+    }
+
+    pub fn extras(&self) -> Option<&[u8]> {
+        if self.extras_length > 0 {
+            let end = self.extras_length as usize;
+            return Some(&self.body[0..end]);
+        }
+        None
+    }
+
+    pub fn key(&self) -> Option<&[u8]> {
+        if self.key_length > 0 {
+            let start = self.extras_length as usize;
+            let end = self.key_length as usize;
+
+            return Some(&self.body[start..end]);
+        }
+
+        None
+    }
+
+    pub fn value(&self) -> Option<&[u8]> {
+        let start: usize = self.extras_length as usize + self.key_length as usize;
+        if self.body_length as usize > start {
+            return Some(&self.body[start..]);
+        }
+
+        None
+    }
+
     /// Trying to create a `Response` from the bytes array.
     ///
     /// If `raw` is incomplete, returns `Ok(None)`, otherwise returns `Ok(Response)`,
@@ -61,8 +101,24 @@ impl Response {
             return Ok(None);
         }
 
+        let header_buf = raw.drain_to(24);
+        let mut header = header_buf.as_ref();
+        let magic = header.read_u8()?;
+        if magic != 0x81 {
+            return Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid packet received"));
+        }
         let mut response = Response::default();
-        response.magic = 0x81;
+        response.opcode = header.read_u8()?;
+        response.key_length = header.read_u16::<NetworkEndian>()?;
+        response.extras_length = header.read_u8()?;
+        response.data_type = header.read_u8()?;
+        response.status = header.read_u16::<NetworkEndian>()?;
+        response.body_length = header.read_u32::<NetworkEndian>()?;
+        response.opaque = header.read_u32::<NetworkEndian>()?;
+        response.cas = header.read_u64::<NetworkEndian>()?;
+
+        let body = raw.drain_to(response.body_length as usize);
+        response.body.extend_from_slice(body.as_slice());
 
         Ok(Some(response))
     }
@@ -74,27 +130,5 @@ impl fmt::Debug for Response {
             .field("command", &self.opcode)
             .field("status", &self.status)
             .finish()
-    }
-}
-
-struct Parser<'a> {
-    buf: &'a [u8],
-    pos: 0,
-}
-
-impl<'a> Parser<'a> {
-    pub fn new(buf: &'a [u8]) -> Parser {
-        Parser {
-            buf: buf,
-            pos: 0,
-        }
-    }
-
-    pub fn parse(&self) -> io::Result<Option<Response>> {
-        let magic = self.expect_u8(0x81)?;
-    }
-
-    fn expect_u8(&self) -> io::Result<u8> {
-        
     }
 }

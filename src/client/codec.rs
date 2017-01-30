@@ -1,5 +1,4 @@
 use std::io;
-use std::str;
 use tokio_core::io::{Codec, EasyBuf};
 
 use protocol::{Request, Response};
@@ -16,8 +15,6 @@ impl Codec for BinaryCodec {
     type Out = Request;
 
     fn decode(&mut self, buf: &mut EasyBuf) -> io::Result<Option<Self::In>> {
-        let length = buf.len();
-
         Self::In::try_from(buf)
     }
 
