@@ -6,9 +6,8 @@ extern crate tokio_service;
 extern crate tokio_proto;
 extern crate byteorder;
 
-mod codec;
 mod protocol;
-mod connection;
+mod client;
 
-
-pub use codec::BinaryCodec;
+pub use client::Client;
+pub use protocol::{Response};

@@ -73,7 +73,7 @@ impl Request {
 
     pub fn set_extras(&mut self, extras: &[u8]) {
         self.extras_length = extras.len() as u8; // TODO: Possible cast failure
-        self.extras = Some(extras.to_owned()); // Must use `extras` directly and remove additional allocation
+        self.extras = Some(extras.to_owned()); // TODO: Must use `extras` directly and remove additional allocation
         self.body_length += self.extras_length as u32;
     }
 

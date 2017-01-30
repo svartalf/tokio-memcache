@@ -1,7 +1,3 @@
-/// Memcached binary protocol
-///
-/// Reference: https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped
-
 use std::io;
 use std::str;
 use tokio_core::io::{Codec, EasyBuf};
@@ -16,15 +12,17 @@ impl BinaryCodec {
 
 
 impl Codec for BinaryCodec {
-    type In = String;
-    type Out = String;
+    type In = Response;
+    type Out = Request;
 
     fn decode(&mut self, buf: &mut EasyBuf) -> io::Result<Option<Self::In>> {
-        unimplemented!()
+        let length = buf.len();
+
+        Self::In::try_from(buf)
     }
 
     fn encode(&mut self, msg: Self::Out, buf: &mut Vec<u8>) -> io::Result<()> {
-        unimplemented!()
+        msg.write(buf)
     }
 
 }

@@ -1,5 +1,5 @@
 [package]
-name = "memcached-futures"
+name = "tokio-memcache"
 version = "0.0.1"
 authors = ["svartalf <self@svartalf.info>"]
 
