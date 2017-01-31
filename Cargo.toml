@@ -10,6 +10,3 @@ tokio-service = "*"
 tokio-proto = "*"
 byteorder = "*"
 enum_primitive = "*"
-
-[dependencies.bytes]
-git = "https://github.com/carllerche/bytes"

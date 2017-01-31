@@ -30,6 +30,7 @@ fn test_response_getk() {
     // I dunno why, but memcached doc have a mistake here,
     // it says that instead of `0x0e` "total body length" byte
     // there should be a `0x09` which is looks totally wrong.
+    // Also, "opcode" byte is wrong, it should be a "getk" instead of "get".
     let buf = vec![
         0x81, 0x0c, 0x00, 0x05,
         0x04, 0x00, 0x00, 0x00,
@@ -70,7 +71,7 @@ fn test_response_cas() {
     assert_eq!(*response.command(), Command::Add);
     assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), DataType::RawBytes);
-    assert_eq!(*response.cas(), 0x0000000000000001);
+    assert_eq!(*response.cas(), 1u64);
 
     assert!(response.extras().is_none());
     assert!(response.key().is_none());
@@ -95,7 +96,7 @@ fn test_response_incr_not_exists() {
     assert_eq!(*response.command(), Command::Increment);
     assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), DataType::RawBytes);
-    assert_eq!(*response.cas(), 0x0000000000000005);
+    assert_eq!(*response.cas(), 5u64);
 
     assert!(response.extras().is_none());
     assert!(response.key().is_none());

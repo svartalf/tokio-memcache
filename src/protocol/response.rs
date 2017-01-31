@@ -1,4 +1,5 @@
 use std::io;
+use std::io::Read;
 use std::fmt;
 
 use enum_primitive::FromPrimitive;
@@ -93,37 +94,30 @@ impl Response {
     }
 
     pub fn try_from(raw: &[u8]) -> Result<Response, io::Error> {
-        println!("{:?}", raw);
-        NetworkEndian::read_u8(raw)?;
-
-        Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid packet received"))
-        /*
-        let magic = NetworkEndian::read_u8(raw)?;
+        let mut cursor = io::Cursor::new(raw);
+        let magic = cursor.read_u8()?;
         if magic != Magic::Response as u8 {
             return Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid packet received"));
         }
 
         let mut response = Response {
+            opcode: Command::from_u8(cursor.read_u8()?).unwrap(),
+            key_length: cursor.read_u16::<NetworkEndian>()?,
+            extras_length: cursor.read_u8()?,
+            data_type: DataType::from_u8(cursor.read_u8()?).unwrap(),
             // TODO: Get rid of `unwrap` here
-            opcode: Command::from_u8(raw.read_u8()?).unwrap(),
-            key_length: raw.read_u16::<NetworkEndian>()?,
-            extras_length: raw.read_u8()?,
-            // TODO: Get rid of `unwrap` here
-            data_type: DataType::from_u8(raw.read_u8()?).unwrap(),
-            // TODO: Get rid of `unwrap` here
-            status: Status::from_u16(raw.read_u16::<NetworkEndian>()?).unwrap(),
-            body_length: raw.read_u32::<NetworkEndian>()?,
-            opaque: raw.read_u32::<NetworkEndian>()?,
-            cas: raw.read_u64::<NetworkEndian>()?,
+            status: Status::from_u16(cursor.read_u16::<NetworkEndian>()?).unwrap(),
+            body_length: cursor.read_u32::<NetworkEndian>()?,
+            opaque: cursor.read_u32::<NetworkEndian>()?,
+            cas: cursor.read_u64::<NetworkEndian>()?,
             body: vec![],
         };
 
         if response.body_length > 0 {
-            response.body.extend_from_slice(&raw[response.body_length as usize..]);
+            cursor.read_to_end(&mut response.body)?;
         }
 
         Ok(response)
-        */
     }
 }
 
