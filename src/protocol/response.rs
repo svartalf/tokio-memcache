@@ -3,7 +3,6 @@ use std::fmt;
 
 use enum_primitive::FromPrimitive;
 use byteorder::{NetworkEndian, ReadBytesExt};
-use tokio_core::io::EasyBuf;
 
 use ::protocol::{Magic, Command, DataType};
 
@@ -93,47 +92,38 @@ impl Response {
         None
     }
 
-    /// Trying to create a `Response` from the bytes array.
-    ///
-    /// If `raw` is incomplete, returns `Ok(None)`, otherwise returns `Ok(Some(Response))`,
-    /// so it will be compatible with a `tokio_core.io.Codec`.
-    pub fn try_from(raw: &mut EasyBuf) -> io::Result<Option<Response>> {
-        let length = raw.len();
+    pub fn try_from(raw: &[u8]) -> Result<Response, io::Error> {
+        println!("{:?}", raw);
+        NetworkEndian::read_u8(raw)?;
 
-        // Quick checking if we have at least a response header
-        if length < 24 {
-            return Ok(None);
-        }
-
-        // TODO: Buffer must not be drained before we checked that both header and body are received
-        let header_buf = raw.drain_to(24);
-        let mut header = header_buf.as_ref();
-        let magic = header.read_u8()?;
+        Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid packet received"))
+        /*
+        let magic = NetworkEndian::read_u8(raw)?;
         if magic != Magic::Response as u8 {
             return Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid packet received"));
         }
 
         let mut response = Response {
             // TODO: Get rid of `unwrap` here
-            opcode: Command::from_u8(header.read_u8()?).unwrap(),
-            key_length: header.read_u16::<NetworkEndian>()?,
-            extras_length: header.read_u8()?,
+            opcode: Command::from_u8(raw.read_u8()?).unwrap(),
+            key_length: raw.read_u16::<NetworkEndian>()?,
+            extras_length: raw.read_u8()?,
             // TODO: Get rid of `unwrap` here
-            data_type: DataType::from_u8(header.read_u8()?).unwrap(),
+            data_type: DataType::from_u8(raw.read_u8()?).unwrap(),
             // TODO: Get rid of `unwrap` here
-            status: Status::from_u16(header.read_u16::<NetworkEndian>()?).unwrap(),
-            body_length: header.read_u32::<NetworkEndian>()?,
-            opaque: header.read_u32::<NetworkEndian>()?,
-            cas: header.read_u64::<NetworkEndian>()?,
+            status: Status::from_u16(raw.read_u16::<NetworkEndian>()?).unwrap(),
+            body_length: raw.read_u32::<NetworkEndian>()?,
+            opaque: raw.read_u32::<NetworkEndian>()?,
+            cas: raw.read_u64::<NetworkEndian>()?,
             body: vec![],
         };
 
         if response.body_length > 0 {
-            let body = raw.drain_to(response.body_length as usize);
-            response.body.extend_from_slice(body.as_slice());
+            response.body.extend_from_slice(&raw[response.body_length as usize..]);
         }
 
-        Ok(Some(response))
+        Ok(response)
+        */
     }
 }
 
