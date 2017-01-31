@@ -18,5 +18,5 @@ fn main() {
         });
 
     let val = lp.run(res).unwrap();
-    println!("RESPONSE: {:?}", val);
+    println!("{:#?}", val);
 }

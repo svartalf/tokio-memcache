@@ -123,9 +123,24 @@ impl Response {
 
 impl fmt::Debug for Response {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("Response")
+        let mut resp = f.debug_struct("Response");
+
+        resp
             .field("command", &self.opcode)
-            .field("status", &self.status)
-            .finish()
+            .field("status", &self.status);
+
+        if let Some(ref key) = self.key() {
+            resp.field("key", key);
+        }
+
+        if let Some(ref value) = self.value() {
+            resp.field("value", value);
+        }
+
+        if let Some(ref extras) = self.extras() {
+            resp.field("extras", extras);
+        }
+
+        resp.finish()
     }
 }
