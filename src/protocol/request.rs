@@ -4,6 +4,7 @@ use byteorder::{NetworkEndian, WriteBytesExt};
 
 use ::protocol::{Magic, Command, DataType};
 
+/// Memcached request instance. In case if you need to construct request manually.
 pub struct Request {
     opcode: Command,
     key_length: u16,
@@ -22,6 +23,13 @@ pub struct Request {
 
 impl Request {
 
+    /// Create new Request with all fields blank.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// let mut request = Request::new(Command::Get);
+    /// ```
     pub fn new(command: Command) -> Request {
         Request {
             opcode: command,
@@ -38,12 +46,29 @@ impl Request {
         }
     }
 
+    /// Provide key field.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// let mut request = Request::new(Command::Get);
+    /// request.set_key(b"Hello");
+    /// ```
     pub fn set_key(&mut self, key: &[u8]) {
         self.key_length = key.len() as u16; // TODO: Possible cast failure
         self.key = Some(key.to_owned()); // TODO: must use `key` directly and remove additional allocation
         self.body_length += self.key_length as u32;
     }
 
+    /// Provide value field.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// let mut request = Request::new(Command::Set);
+    /// request.set_key(b"Hello");
+    /// request.set_value(b"World");
+    /// ```
     pub fn set_value(&mut self, value: &[u8]) {
         self.body_length += value.len() as u32; // TODO: Possible cast failure
         self.value = Some(value.to_owned()); // TODO: Must use `value` directly and remove additional allocation
@@ -55,7 +80,13 @@ impl Request {
         self.body_length += self.extras_length as u32;
     }
 
-    // TODO: Not sure if proper command name
+    /// Write serialized request as a bytes into `T`
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`std::io::Error`][Error] if write had failed somehow.
+    ///
+    /// [Error]: ../../std/io/struct.Error.html
     pub fn write<T: io::Write>(&self, out: &mut T) -> io::Result<()> {
         out.write_u8(Magic::Request as u8)?;
         out.write_u8(self.opcode as u8)?;

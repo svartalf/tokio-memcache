@@ -12,7 +12,7 @@ use futures::{Future, BoxFuture};
 use super::protocol::{MemcachedProto};
 use protocol::{Request, Response, Command};
 
-
+/// TCP Client to `memcached` server
 pub struct Client {
     inner: ClientService<TcpStream, MemcachedProto>,
 }
@@ -31,11 +31,21 @@ impl Client {
         Box::new(result)
     }
 
+    /// Send [`Request`][request] to server.
+    ///
+    /// This method can be used if you need to send a rich request
+    /// and there is no available wrapper method.
+    ///
+    /// [request]: ./struct.Request.html
+    pub fn send(&self, req: Request) -> BoxFuture<Response, io::Error> {
+        self.call(req)
+    }
+
     pub fn get(&self, key: &[u8]) -> BoxFuture<Response, io::Error> {
         let mut request = Request::new(Command::Get);
         request.set_key(key);
 
-        self.call(request)
+        self.send(request)
     }
 
     pub fn set(&self, key: &[u8], value: &[u8]) -> BoxFuture<Response, io::Error> {
@@ -44,7 +54,7 @@ impl Client {
         request.set_value(value);
         request.set_extras(&vec![0xde, 0xad, 0xbe, 0xef, 0x00, 0x00, 0x0e, 0x10]);
 
-        self.call(request)
+        self.send(request)
     }
 
 }

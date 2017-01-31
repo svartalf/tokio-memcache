@@ -9,6 +9,7 @@ use ::protocol::{Magic, Command, DataType};
 
 enum_from_primitive! {
     #[derive(Debug, PartialEq)]
+    /// Response status variants
     pub enum Status {
         Ok = 0x0000,
         KeyNotFound = 0x0001,
@@ -29,6 +30,7 @@ enum_from_primitive! {
     }
 }
 
+/// Parsed `memcached` response.
 pub struct Response {
     // We are not storing `magic` byte, because it is always the same and is not required by clients
     opcode: Command,
@@ -94,7 +96,7 @@ impl Response {
     /// Trying to create a `Response` from the bytes array.
     ///
     /// If `raw` is incomplete, returns `Ok(None)`, otherwise returns `Ok(Response)`,
-    /// it will be compatible with a Codec struct
+    /// so it will be compatible with a `tokio_core.io.Codec`.
     pub fn try_from(raw: &mut EasyBuf) -> io::Result<Option<Response>> {
         let length = raw.len();
 
