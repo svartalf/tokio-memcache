@@ -27,12 +27,19 @@ enum_from_primitive! {
     }
 }
 
+enum_from_primitive! {
+    #[derive(Debug, PartialEq)]
+    pub enum DataType {
+        RawBytes = 0x00,
+    }
+}
+
 pub struct Response {
     // We are not storing `magic` byte, because it is always the same and is not required by clients
     opcode: u8,
     key_length: u16,
     extras_length: u8,
-    data_type: u8,
+    data_type: DataType,
     status: Status,
     body_length: u32,
     opaque: u32,
@@ -49,7 +56,7 @@ impl Response {
         &self.status
     }
 
-    pub fn data_type(&self) -> &u8 {
+    pub fn data_type(&self) -> &DataType {
         &self.data_type
     }
 
@@ -112,7 +119,8 @@ impl Response {
             opcode: header.read_u8()?,
             key_length: header.read_u16::<NetworkEndian>()?,
             extras_length: header.read_u8()?,
-            data_type: header.read_u8()?,
+            // TODO: Get rid of `unwrap` here
+            data_type: DataType::from_u8(header.read_u8()?).unwrap(),
             // TODO: Get rid of `unwrap` here
             status: Status::from_u16(header.read_u16::<NetworkEndian>()?).unwrap(),
             body_length: header.read_u32::<NetworkEndian>()?,
