@@ -8,8 +8,8 @@ use tokio_core::io::EasyBuf;
 use ::protocol::{Magic, Command, DataType};
 
 enum_from_primitive! {
-    #[derive(Debug, PartialEq)]
     /// Response status variants
+    #[derive(Debug, PartialEq)]
     pub enum Status {
         Ok = 0x0000,
         KeyNotFound = 0x0001,
@@ -95,7 +95,7 @@ impl Response {
 
     /// Trying to create a `Response` from the bytes array.
     ///
-    /// If `raw` is incomplete, returns `Ok(None)`, otherwise returns `Ok(Response)`,
+    /// If `raw` is incomplete, returns `Ok(None)`, otherwise returns `Ok(Some(Response))`,
     /// so it will be compatible with a `tokio_core.io.Codec`.
     pub fn try_from(raw: &mut EasyBuf) -> io::Result<Option<Response>> {
         let length = raw.len();
@@ -105,6 +105,7 @@ impl Response {
             return Ok(None);
         }
 
+        // TODO: Buffer must not be drained before we checked that both header and body are received
         let header_buf = raw.drain_to(24);
         let mut header = header_buf.as_ref();
         let magic = header.read_u8()?;
