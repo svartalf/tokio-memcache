@@ -5,6 +5,8 @@ use enum_primitive::FromPrimitive;
 use byteorder::{NetworkEndian, ReadBytesExt};
 use tokio_core::io::EasyBuf;
 
+use ::protocol::{Magic, Command, DataType};
+
 enum_from_primitive! {
     #[derive(Debug, PartialEq)]
     pub enum Status {
@@ -27,16 +29,9 @@ enum_from_primitive! {
     }
 }
 
-enum_from_primitive! {
-    #[derive(Debug, PartialEq)]
-    pub enum DataType {
-        RawBytes = 0x00,
-    }
-}
-
 pub struct Response {
     // We are not storing `magic` byte, because it is always the same and is not required by clients
-    opcode: u8,
+    opcode: Command,
     key_length: u16,
     extras_length: u8,
     data_type: DataType,
@@ -48,7 +43,7 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn command(&self) -> &u8 {
+    pub fn command(&self) -> &Command {
         &self.opcode
     }
 
@@ -111,12 +106,13 @@ impl Response {
         let header_buf = raw.drain_to(24);
         let mut header = header_buf.as_ref();
         let magic = header.read_u8()?;
-        if magic != 0x81 {
+        if magic != Magic::Response as u8 {
             return Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid packet received"));
         }
 
         let mut response = Response {
-            opcode: header.read_u8()?,
+            // TODO: Get rid of `unwrap` here
+            opcode: Command::from_u8(header.read_u8()?).unwrap(),
             key_length: header.read_u16::<NetworkEndian>()?,
             extras_length: header.read_u8()?,
             // TODO: Get rid of `unwrap` here

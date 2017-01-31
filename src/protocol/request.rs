@@ -2,34 +2,13 @@ use std::io;
 
 use byteorder::{NetworkEndian, WriteBytesExt};
 
-use ::protocol::Command;
-
-// Request header structure for reference
-//
-//     Byte/     0       |       1       |       2       |       3       |
-//        /              |               |               |               |
-//       |0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
-//       +---------------+---------------+---------------+---------------+
-//      0| Magic         | Opcode        | Key length                    |
-//       +---------------+---------------+---------------+---------------+
-//      4| Extras length | Data type     | vbucket id                    |
-//       +---------------+---------------+---------------+---------------+
-//      8| Total body length                                             |
-//       +---------------+---------------+---------------+---------------+
-//     12| Opaque                                                        |
-//       +---------------+---------------+---------------+---------------+
-//     16| CAS                                                           |
-//       |                                                               |
-//       +---------------+---------------+---------------+---------------+
-//       Total 24 bytes
+use ::protocol::{Magic, Command, DataType};
 
 pub struct Request {
-    // header
-    magic: u8,
-    opcode: u8,
+    opcode: Command,
     key_length: u16,
     extras_length: u8,
-    data_type: u8,
+    data_type: DataType,
     vbucket_id: u16,
     body_length: u32,
     opaque: u32,
@@ -45,11 +24,10 @@ impl Request {
 
     pub fn new(command: Command) -> Request {
         Request {
-            magic: 0x80,
-            opcode: command as u8,
+            opcode: command,
             key_length: 0,
             extras_length: 0,
-            data_type: 0x00,
+            data_type: DataType::RawBytes,
             vbucket_id: 0x00,
             body_length: 0,
             opaque: 0,
@@ -79,27 +57,24 @@ impl Request {
 
     // TODO: Not sure if proper command name
     pub fn write<T: io::Write>(&self, out: &mut T) -> io::Result<()> {
-        out.write_u8(self.magic)?;
-        out.write_u8(self.opcode)?;
+        out.write_u8(Magic::Request as u8)?;
+        out.write_u8(self.opcode as u8)?;
         out.write_u16::<NetworkEndian>(self.key_length)?;
         out.write_u8(self.extras_length)?;
-        out.write_u8(self.data_type)?;
+        out.write_u8(self.data_type as u8)?;
         out.write_u16::<NetworkEndian>(self.vbucket_id)?;
         out.write_u32::<NetworkEndian>(self.body_length)?;
         out.write_u32::<NetworkEndian>(self.opaque)?;
         out.write_u64::<NetworkEndian>(self.cas)?;
 
-        // TODO: Check if there is no additional allocation made
         if let Some(ref extras) = self.extras {
             out.write(&extras)?;
         }
 
-        // TODO: Check if there is no additional allocation made
         if let Some(ref key) = self.key {
             out.write(&key)?;
         }
 
-        // TODO: Check if there is no additional allocation made
         if let Some(ref value) = self.value {
             out.write(&value)?;
         }

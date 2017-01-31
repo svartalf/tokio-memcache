@@ -1,6 +1,6 @@
 use tokio_core::io::EasyBuf;
 
-use protocol::{Status, DataType, Response};
+use protocol::{Command, Status, DataType, Response};
 
 #[test]
 fn test_response_get_from_easybuf() {
@@ -18,7 +18,7 @@ fn test_response_get_from_easybuf() {
 
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
-    assert_eq!(*response.command(), 0x00);
+    assert_eq!(*response.command(), Command::Get);
     assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), DataType::RawBytes);
 
@@ -33,7 +33,7 @@ fn test_response_getk_from_easybuf() {
     // it says that instead of `0x0e` "total body length" byte
     // there should be a `0x09` which is looks totally wrong.
     let mut buf = EasyBuf::from(vec![
-        0x81, 0x00, 0x00, 0x05,
+        0x81, 0x0c, 0x00, 0x05,
         0x04, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x0e,
         0x00, 0x00, 0x00, 0x00,
@@ -47,7 +47,7 @@ fn test_response_getk_from_easybuf() {
 
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
-    assert_eq!(*response.command(), 0x00);
+    assert_eq!(*response.command(), Command::GetK);
     assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), DataType::RawBytes);
 
@@ -69,7 +69,7 @@ fn test_response_cas() {
 
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
-    assert_eq!(*response.command(), 0x02);
+    assert_eq!(*response.command(), Command::Add);
     assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), DataType::RawBytes);
     assert_eq!(*response.cas(), 0x0000000000000001);
@@ -94,7 +94,7 @@ fn test_response_incr_not_exists() {
 
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
-    assert_eq!(*response.command(), 0x05);
+    assert_eq!(*response.command(), Command::Increment);
     assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), DataType::RawBytes);
     assert_eq!(*response.cas(), 0x0000000000000005);
@@ -119,7 +119,7 @@ fn test_response_version() {
 
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
-    assert_eq!(*response.command(), 0x0b);
+    assert_eq!(*response.command(), Command::Version);
     assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), DataType::RawBytes);
     assert!(response.extras().is_none());
@@ -143,7 +143,7 @@ fn test_response_error_not_found() {
 
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
-    assert_eq!(*response.command(), 0x00);
+    assert_eq!(*response.command(), Command::Get);
     assert_eq!(*response.status(), Status::KeyNotFound);
     assert_eq!(*response.data_type(), DataType::RawBytes);
     assert!(response.extras().is_none());
