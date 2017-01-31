@@ -1,6 +1,6 @@
 use tokio_core::io::EasyBuf;
 
-use protocol::Response;
+use protocol::{Status, Response};
 
 #[test]
 fn test_response_get_from_easybuf() {
@@ -19,7 +19,7 @@ fn test_response_get_from_easybuf() {
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
     assert_eq!(*response.command(), 0x00);
-    assert_eq!(*response.status(), 0x0000);
+    assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), 0x00);
 
     assert_eq!(response.extras().unwrap(), [0xde, 0xad, 0xbe, 0xef]);
@@ -48,7 +48,7 @@ fn test_response_getk_from_easybuf() {
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
     assert_eq!(*response.command(), 0x00);
-    assert_eq!(*response.status(), 0x0000);
+    assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), 0x00);
 
     assert_eq!(response.extras().unwrap(), [0xde, 0xad, 0xbe, 0xef]);
@@ -70,7 +70,7 @@ fn test_response_cas() {
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
     assert_eq!(*response.command(), 0x02);
-    assert_eq!(*response.status(), 0x0000);
+    assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), 0x00);
     assert_eq!(*response.cas(), 0x0000000000000001);
 
@@ -95,7 +95,7 @@ fn test_response_incr_not_exists() {
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
     assert_eq!(*response.command(), 0x05);
-    assert_eq!(*response.status(), 0x0000);
+    assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), 0x00);
     assert_eq!(*response.cas(), 0x0000000000000005);
 
@@ -120,7 +120,7 @@ fn test_response_version() {
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
     assert_eq!(*response.command(), 0x0b);
-    assert_eq!(*response.status(), 0x0000);
+    assert_eq!(*response.status(), Status::Ok);
     assert_eq!(*response.data_type(), 0x00);
     assert!(response.extras().is_none());
     assert!(response.key().is_none());
@@ -144,7 +144,7 @@ fn test_response_error_not_found() {
     let response = Response::try_from(&mut buf).unwrap().unwrap();
 
     assert_eq!(*response.command(), 0x00);
-    assert_eq!(*response.status(), 0x0001);
+    assert_eq!(*response.status(), Status::KeyNotFound);
     assert_eq!(*response.data_type(), 0x00);
     assert!(response.extras().is_none());
     assert!(response.key().is_none());

@@ -8,7 +8,7 @@ pub mod response;
 
 pub use self::request::Request;
 pub use self::command::Command;
-pub use self::response::Response;
+pub use self::response::{Status, Response};
 
 #[cfg(test)]
 mod tests;

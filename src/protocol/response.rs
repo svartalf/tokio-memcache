@@ -1,39 +1,39 @@
 use std::io;
 use std::fmt;
 
+use enum_primitive::FromPrimitive;
 use byteorder::{NetworkEndian, ReadBytesExt};
 use tokio_core::io::EasyBuf;
 
-// use ::protocol::Command;
+enum_from_primitive! {
+    #[derive(Debug, PartialEq)]
+    pub enum Status {
+        Ok = 0x0000,
+        KeyNotFound = 0x0001,
+        KeyExists = 0x0002,
+        ValueTooLarge = 0x0003,
+        InvalidArguments = 0x0004,
+        ItemNotStored = 0x0005,
+        IncrDecrOnNonNumericValue = 0x0006,
+        VBucketBelongsToAnotherServer = 0x0007,
+        AuthenticationError = 0x0008,
+        AuthenticationContinue = 0x0009,
+        UnknownCommand = 0x0081,
+        OutOfMemory = 0x0082,
+        NotSupported = 0x00083,
+        InternalError = 0x0084,
+        Busy = 0x0085,
+        TemporaryFailure = 0x0086,
+    }
+}
 
-/*
-     Byte/     0       |       1       |       2       |       3       |
-        /              |               |               |               |
-       |0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
-       +---------------+---------------+---------------+---------------+
-      0| Magic         | Opcode        | Key Length                    |
-       +---------------+---------------+---------------+---------------+
-      4| Extras length | Data type     | Status                        |
-       +---------------+---------------+---------------+---------------+
-      8| Total body length                                             |
-       +---------------+---------------+---------------+---------------+
-     12| Opaque                                                        |
-       +---------------+---------------+---------------+---------------+
-     16| CAS                                                           |
-       |                                                               |
-       +---------------+---------------+---------------+---------------+
-       Total 24 bytes
-
-       */
-
-#[derive(Default)]
 pub struct Response {
     // We are not storing `magic` byte, because it is always the same and is not required by clients
     opcode: u8,
     key_length: u16,
     extras_length: u8,
     data_type: u8,
-    status: u16,
+    status: Status,
     body_length: u32,
     opaque: u32,
     cas: u64,
@@ -45,7 +45,7 @@ impl Response {
         &self.opcode
     }
 
-    pub fn status(&self) -> &u16 {
+    pub fn status(&self) -> &Status {
         &self.status
     }
 
@@ -113,7 +113,8 @@ impl Response {
             key_length: header.read_u16::<NetworkEndian>()?,
             extras_length: header.read_u8()?,
             data_type: header.read_u8()?,
-            status: header.read_u16::<NetworkEndian>()?,
+            // TODO: Get rid of `unwrap` here
+            status: Status::from_u16(header.read_u16::<NetworkEndian>()?).unwrap(),
             body_length: header.read_u32::<NetworkEndian>()?,
             opaque: header.read_u32::<NetworkEndian>()?,
             cas: header.read_u64::<NetworkEndian>()?,
