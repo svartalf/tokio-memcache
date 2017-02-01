@@ -101,12 +101,14 @@ impl Response {
         }
 
         let mut response = Response {
-            opcode: Command::from_u8(cursor.read_u8()?).unwrap(),
+            opcode: Command::from_u8(cursor.read_u8()?)
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "Unknown command"))?,
             key_length: cursor.read_u16::<NetworkEndian>()?,
             extras_length: cursor.read_u8()?,
-            data_type: DataType::from_u8(cursor.read_u8()?).unwrap(),
-            // TODO: Get rid of `unwrap` here
-            status: Status::from_u16(cursor.read_u16::<NetworkEndian>()?).unwrap(),
+            data_type: DataType::from_u8(cursor.read_u8()?)
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "Unknown data type"))?,
+            status: Status::from_u16(cursor.read_u16::<NetworkEndian>()?)
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "Unknown status"))?,
             body_length: cursor.read_u32::<NetworkEndian>()?,
             opaque: cursor.read_u32::<NetworkEndian>()?,
             cas: cursor.read_u64::<NetworkEndian>()?,
