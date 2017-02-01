@@ -102,13 +102,13 @@ impl Response {
 
         let mut response = Response {
             opcode: Command::from_u8(cursor.read_u8()?)
-                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "Unknown command"))?,
+                .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Unknown command"))?,
             key_length: cursor.read_u16::<NetworkEndian>()?,
             extras_length: cursor.read_u8()?,
             data_type: DataType::from_u8(cursor.read_u8()?)
-                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "Unknown data type"))?,
+                .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Unknown data type"))?,
             status: Status::from_u16(cursor.read_u16::<NetworkEndian>()?)
-                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "Unknown status"))?,
+                .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Unknown status"))?,
             body_length: cursor.read_u32::<NetworkEndian>()?,
             opaque: cursor.read_u32::<NetworkEndian>()?,
             cas: cursor.read_u64::<NetworkEndian>()?,
@@ -131,16 +131,16 @@ impl fmt::Debug for Response {
             .field("command", &self.opcode)
             .field("status", &self.status);
 
-        if let Some(ref key) = self.key() {
-            resp.field("key", key);
+        if let Some(key) = self.key() {
+            resp.field("key", &key);
         }
 
-        if let Some(ref value) = self.value() {
-            resp.field("value", value);
+        if let Some(value) = self.value() {
+            resp.field("value", &value);
         }
 
-        if let Some(ref extras) = self.extras() {
-            resp.field("extras", extras);
+        if let Some(extras) = self.extras() {
+            resp.field("extras", &extras);
         }
 
         resp.finish()

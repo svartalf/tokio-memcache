@@ -99,15 +99,15 @@ impl Request {
         out.write_u64::<NetworkEndian>(self.cas)?;
 
         if let Some(ref extras) = self.extras {
-            out.write(&extras)?;
+            out.write_all(extras)?;
         }
 
         if let Some(ref key) = self.key {
-            out.write(&key)?;
+            out.write_all(key)?;
         }
 
         if let Some(ref value) = self.value {
-            out.write(&value)?;
+            out.write_all(value)?;
         }
 
         Ok(())

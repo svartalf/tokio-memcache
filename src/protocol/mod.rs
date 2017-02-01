@@ -1,6 +1,6 @@
 /// Memcached binary protocol
 ///
-/// Reference: https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped
+/// Reference: [](https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped)
 
 pub mod command;
 pub mod request;

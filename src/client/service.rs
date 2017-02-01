@@ -52,7 +52,7 @@ impl Client {
         let mut request = Request::new(Command::Set);
         request.set_key(key);
         request.set_value(value);
-        request.set_extras(&vec![0xde, 0xad, 0xbe, 0xef, 0x00, 0x00, 0x0e, 0x10]);
+        request.set_extras(&[0xde, 0xad, 0xbe, 0xef, 0x00, 0x00, 0x0e, 0x10]);
 
         self.send(request)
     }
