@@ -1,3 +1,5 @@
+use test::Bencher;
+
 use protocol::{Command, Status, DataType, Response};
 
 #[test]
@@ -148,4 +150,21 @@ fn test_response_error_not_found() {
     assert!(response.extras().is_none());
     assert!(response.key().is_none());
     assert_eq!(response.value().unwrap(), b"Not found");
+}
+
+#[bench]
+fn bench_parsing_response_get(b: &mut Bencher) {
+    let buf = vec![
+        0x81, 0x00, 0x00, 0x00,
+        0x04, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x09,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x01,
+        0xde, 0xad, 0xbe, 0xef,
+        0x57, 0x6f, 0x72, 0x6c,
+        0x64,
+    ];
+
+    b.iter(|| Response::try_from(&buf));
 }

@@ -1,3 +1,6 @@
+#![feature(test)]
+
+extern crate test;
 extern crate futures;
 extern crate tokio_core;
 extern crate tokio_service;

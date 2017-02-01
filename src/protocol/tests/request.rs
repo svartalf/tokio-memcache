@@ -1,3 +1,5 @@
+use test::Bencher;
+
 use protocol::{Request, Command};
 
 #[test]
@@ -45,4 +47,15 @@ fn test_request_add_serialization() {
     let mut result: Vec<u8> = vec![];
     request.write(&mut result).unwrap();
     assert_eq!(result, expected);
+}
+
+#[bench]
+fn bench_request_get_serialization(b: &mut Bencher) {
+    let mut request = Request::new(Command::Get);
+    request.set_key(b"Hello");
+
+    b.iter(|| {
+        let mut result: Vec<u8> = vec![];
+        request.write(&mut result).unwrap();
+    });
 }
