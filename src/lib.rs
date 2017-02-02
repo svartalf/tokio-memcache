@@ -16,4 +16,4 @@ mod protocol;
 mod client;
 
 pub use client::Client;
-pub use protocol::{Request, Response, Command, DataType};
+pub use protocol::{Request, Response, Command, DataType, extras};

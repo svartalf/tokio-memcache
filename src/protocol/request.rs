@@ -2,6 +2,7 @@ use std::io;
 
 use byteorder::{NetworkEndian, WriteBytesExt};
 
+use super::Extras;
 use ::protocol::{Magic, Command, DataType};
 
 /// Memcached request instance. In case if you need to construct request manually.
@@ -74,9 +75,12 @@ impl Request {
         self.value = Some(value.to_owned()); // TODO: Must use `value` directly and remove additional allocation
     }
 
-    pub fn set_extras(&mut self, extras: &[u8]) {
-        self.extras_length = extras.len() as u8; // TODO: Possible cast failure
-        self.extras = Some(extras.to_owned()); // TODO: Must use `extras` directly and remove additional allocation
+    pub fn set_extras<T: Extras>(&mut self, extras: T) {
+        let mut buf: Vec<u8> = vec![];
+        extras.write(&mut buf).expect("Failed to set extras");
+
+        self.extras_length = buf.len() as u8; // TODO: Possible cast failure
+        self.extras = Some(buf);
         self.body_length += self.extras_length as u32;
     }
 
