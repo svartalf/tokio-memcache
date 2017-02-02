@@ -1,4 +1,5 @@
 use std::io;
+use std::convert::AsRef;
 
 use byteorder::{NetworkEndian, WriteBytesExt};
 
@@ -55,9 +56,9 @@ impl Request {
     /// let mut request = Request::new(Command::Get);
     /// request.set_key(b"Hello");
     /// ```
-    pub fn set_key(&mut self, key: &[u8]) {
-        self.key_length = key.len() as u16; // TODO: Possible cast failure
-        self.key = Some(key.to_owned()); // TODO: must use `key` directly and remove additional allocation
+    pub fn set_key<T: AsRef<[u8]>>(&mut self, key: T) {
+        self.key_length = key.as_ref().len() as u16; // TODO: Possible cast failure
+        self.key = Some(key.as_ref().to_owned());
         self.body_length += self.key_length as u32;
     }
 
@@ -70,9 +71,9 @@ impl Request {
     /// request.set_key(b"Hello");
     /// request.set_value(b"World");
     /// ```
-    pub fn set_value(&mut self, value: &[u8]) {
-        self.body_length += value.len() as u32; // TODO: Possible cast failure
-        self.value = Some(value.to_owned()); // TODO: Must use `value` directly and remove additional allocation
+    pub fn set_value<T: AsRef<[u8]>>(&mut self, value: T) {
+        self.body_length += value.as_ref().len() as u32; // TODO: Possible cast failure
+        self.value = Some(value.as_ref().to_owned());
     }
 
     pub fn set_extras<T: Extras>(&mut self, extras: T) {
@@ -117,4 +118,3 @@ impl Request {
         Ok(())
     }
 }
-
