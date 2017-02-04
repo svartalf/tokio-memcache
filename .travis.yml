@@ -10,4 +10,4 @@ rust:
   - nightly
 script:
   - cargo build --verbose
-  - ([ $TRAVIS_RUST_VERSION != nightly ] || $CARGO build --verbose --features clippy)
+  - ([ $TRAVIS_RUST_VERSION != nightly ] || cargo build --verbose --features clippy)
