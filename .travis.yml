@@ -1,0 +1,13 @@
+language: rust
+os:
+  - linux
+  - osx
+services:
+  - memcached
+rust:
+  - stable
+  - beta
+  - nightly
+script:
+  - cargo build --verbose
+  - ([ $TRAVIS_RUST_VERSION != nightly ] || $CARGO build --verbose --features clippy)
