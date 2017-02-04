@@ -1,4 +1,5 @@
 use std::io;
+use std::fmt;
 use std::convert::AsRef;
 
 use byteorder::{NetworkEndian, WriteBytesExt};
@@ -57,7 +58,7 @@ impl Request {
     /// request.set_key(b"Hello");
     /// ```
     pub fn set_key<T: AsRef<[u8]>>(&mut self, key: T) {
-        self.key_length = key.as_ref().len() as u16; // TODO: Possible cast failure
+        self.key_length = key.as_ref().len() as u16; // TODO: Possible value truncation
         self.key = Some(key.as_ref().to_owned());
         self.body_length += self.key_length as u32;
     }
@@ -72,7 +73,7 @@ impl Request {
     /// request.set_value(b"World");
     /// ```
     pub fn set_value<T: AsRef<[u8]>>(&mut self, value: T) {
-        self.body_length += value.as_ref().len() as u32; // TODO: Possible cast failure
+        self.body_length += value.as_ref().len() as u32; // TODO: Possible value truncation
         self.value = Some(value.as_ref().to_owned());
     }
 
@@ -80,7 +81,7 @@ impl Request {
         let mut buf: Vec<u8> = vec![];
         extras.write(&mut buf).expect("Failed to set extras");
 
-        self.extras_length = buf.len() as u8; // TODO: Possible cast failure
+        self.extras_length = buf.len() as u8; // TODO: Possible value truncation
         self.extras = Some(buf);
         self.body_length += self.extras_length as u32;
     }
@@ -116,5 +117,17 @@ impl Request {
         }
 
         Ok(())
+    }
+}
+
+
+impl fmt::Debug for Request {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut resp = f.debug_struct("Request");
+
+        resp
+            .field("command", &self.opcode);
+
+        resp.finish()
     }
 }

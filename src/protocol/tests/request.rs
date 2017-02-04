@@ -1,3 +1,5 @@
+use std::default::Default;
+
 use test::Bencher;
 
 use protocol::{Request, Command, extras};
@@ -16,6 +18,32 @@ fn test_request_get_serialization() {
         0x00, 0x00, 0x00, 0x00,
         0x48, 0x65, 0x6c, 0x6c,
         0x6f,
+    ];
+
+    let mut result: Vec<u8> = vec![];
+    request.write(&mut result).unwrap();
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn test_request_set_serialization() {
+    let mut request = Request::new(Command::Set);
+    request.set_key(b"Hello");
+    request.set_value(b"World");
+    request.set_extras(extras::SetExtras::default());
+
+    let expected: Vec<u8> = vec![
+        0x80, 0x01, 0x00, 0x05,
+        0x08, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x12,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x48, 0x65, 0x6c, 0x6c,
+        0x6f, 0x57, 0x6f, 0x72,
+        0x6c, 0x64,
     ];
 
     let mut result: Vec<u8> = vec![];

@@ -24,7 +24,6 @@ impl Codec for BinaryCodec {
         if packet_length < length {  // Body is not received yet
             return Ok(None);
         }
-
         let packet = buf.drain_to(packet_length);
 
         match Self::In::try_from(packet.as_slice()) {
