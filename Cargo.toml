@@ -1,19 +1,25 @@
 [package]
 name = "tokio-memcache"
+description = "Tokio memcache client. WIP"
 version = "0.0.1"
+repository = "https://github.com/svartalf/tokio-memcache"
 authors = ["svartalf <self@svartalf.info>"]
+keywords = ["tokio", "futures", "memcache", "memcached"]
+categories = ["asynchronous", "caching"]
+travis-ci = { repository = "https://github.com/svartalf/tokio-memcache", branch = "master" }
+license = "Apache-2.0"
 
 [dependencies]
-futures = "*"
-tokio-core = "*"
-tokio-service = "*"
-tokio-proto = "*"
-byteorder = "*"
-enum_primitive = "*"
-log = "*"
+futures = "~0.1"
+tokio-core = "~0.1"
+tokio-service = "~0.1"
+tokio-proto = "~0.1"
+byteorder = "~1.0"
+enum_primitive = "~0.1"
+log = "~0.3"
 
 # Development
-clippy = {version = "*", optional = true}
+clippy = {version = "0.0.112", optional = true}
 
 [features]
 default = []
