@@ -10,7 +10,7 @@ Rust + futures + tokio memcached client.
 
  * ☑ Binary protocol support
  * ☐ Nice one API (in progress)
- * ☐ Errors handling
+ * ☑ Errors handling
  * ☐ Unix sockets
  * ☐ SSL connections
  * ☐ Connection pool

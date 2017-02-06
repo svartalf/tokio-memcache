@@ -121,6 +121,14 @@ impl Response {
 
         Ok(response)
     }
+
+    pub fn is_ok(&self) -> bool {
+        self.status == Status::Ok
+    }
+
+    pub fn is_err(&self) -> bool {
+        !self.is_ok()
+    }
 }
 
 impl fmt::Debug for Response {

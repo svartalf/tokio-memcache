@@ -16,6 +16,8 @@ extern crate byteorder;
 
 mod protocol;
 mod client;
+mod errors;
 
 pub use client::Client;
-pub use protocol::{Request, Response, Command, DataType, extras};
+pub use protocol::{Request, Response, Command, extras};
+pub use errors::{ErrorKind, MemcacheError as Error};
