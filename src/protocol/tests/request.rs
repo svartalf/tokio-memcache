@@ -1,5 +1,6 @@
 use std::default::Default;
 
+#[cfg(feature = "nightly")]
 use test::Bencher;
 
 use protocol::{Request, Command, extras};
@@ -186,6 +187,7 @@ fn test_request_version_serialization() {
     assert_eq!(result, expected);
 }
 
+#[cfg(feature = "nightly")]
 #[bench]
 fn bench_request_get_serialization(b: &mut Bencher) {
     let mut request = Request::new(Command::Get);

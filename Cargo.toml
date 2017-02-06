@@ -9,6 +9,10 @@ categories = ["asynchronous", "caching"]
 travis-ci = { repository = "https://github.com/svartalf/tokio-memcache", branch = "master" }
 license = "Apache-2.0"
 
+[features]
+default = []
+nightly = ["clippy"]
+
 [dependencies]
 futures = "~0.1"
 tokio-core = "~0.1"
@@ -18,8 +22,4 @@ byteorder = "~1.0"
 enum_primitive = "~0.1"
 log = "~0.3"
 
-[dev-dependencies]
-clippy = "0.0.112"
-
-[features]
-default = []
+clippy = { version = "0.0.113", optional = true }

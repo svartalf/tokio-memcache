@@ -1,7 +1,6 @@
 language: rust
 os:
   - linux
-  - osx
 services:
   - memcached
 rust:
@@ -9,5 +8,8 @@ rust:
   - beta
   - nightly
 script:
-  - cargo build --verbose
-  - ([ $TRAVIS_RUST_VERSION != nightly ] || cargo build --verbose --features clippy)
+  - ([ $TRAVIS_RUST_VERSION == nightly ] || cargo build)
+  - ([ $TRAVIS_RUST_VERSION != nightly ] || cargo build --features nightly)
+  - ([ $TRAVIS_RUST_VERSION == nightly ] || cargo test)
+  - ([ $TRAVIS_RUST_VERSION != nightly ] || cargo test --features nightly)
+  - ([ $TRAVIS_RUST_VERSION != nightly ] || cargo bench --features nightly)

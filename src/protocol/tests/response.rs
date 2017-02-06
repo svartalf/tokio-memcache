@@ -1,3 +1,4 @@
+#[cfg(feature = "nightly")]
 use test::Bencher;
 
 use protocol::{Command, Status, DataType, Response};
@@ -152,6 +153,7 @@ fn test_response_error_not_found() {
     assert_eq!(response.value().unwrap(), b"Not found");
 }
 
+#[cfg(feature = "nightly")]
 #[bench]
 fn bench_parsing_response_get(b: &mut Bencher) {
     let buf = vec![
