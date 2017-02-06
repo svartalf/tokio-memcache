@@ -19,7 +19,7 @@ enum_primitive = "~0.1"
 log = "~0.3"
 
 [dev-dependencies]
-clippy = {version = "0.0.112", optional = true}
+clippy = "0.0.112"
 
 [features]
 default = []
