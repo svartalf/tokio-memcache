@@ -27,6 +27,13 @@ impl Error for MemcacheError {
             },
         }
     }
+
+    fn cause(&self) -> Option<&Error> {
+        match self.kind {
+            ErrorKind::Io(ref err) => Some(err),
+            _ => None,
+        }
+    }
 }
 
 impl fmt::Display for MemcacheError {
