@@ -18,6 +18,6 @@ mod protocol;
 mod client;
 mod errors;
 
-pub use client::Client;
+pub use client::{Client, Connection};
 pub use protocol::{Request, Response, Command, extras};
-pub use errors::{ErrorKind, MemcacheError as Error};
+pub use errors::{ErrorKind, MemcacheError};
