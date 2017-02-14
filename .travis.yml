@@ -7,6 +7,9 @@ rust:
   - stable
   - beta
   - nightly
+matrix:
+  allow_failures:
+    - rust: nightly
 script:
   - ([ $TRAVIS_RUST_VERSION == nightly ] || cargo build)
   - ([ $TRAVIS_RUST_VERSION != nightly ] || cargo build --features nightly)

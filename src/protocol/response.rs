@@ -1,5 +1,6 @@
 use std::io;
 use std::io::Read;
+use std::boxed::Box;
 use std::fmt;
 
 use enum_primitive::FromPrimitive;
@@ -41,7 +42,7 @@ pub struct Response {
     body_length: u32,
     opaque: u32,
     cas: u64,
-    body: Vec<u8>,
+    body: Option<Box<[u8]>>,
 }
 
 impl Response {
@@ -66,31 +67,36 @@ impl Response {
     }
 
     pub fn extras(&self) -> Option<&[u8]> {
-        if self.extras_length > 0 {
-            let end = self.extras_length as usize;
-            return Some(&self.body[..end]);
+        match self.body {
+            Some(ref body) if self.extras_length > 0 => {
+                let end = self.extras_length as usize;
+                Some(&body[..end])
+            }
+            _ => None,
         }
-        None
     }
 
     pub fn key(&self) -> Option<&[u8]> {
-        if self.key_length > 0 {
-            let start = self.extras_length as usize;
-            let end = start + self.key_length as usize;
+        match self.body {
+            Some(ref body) if self.key_length > 0 => {
+                let start = self.extras_length as usize;
+                let end = start + self.key_length as usize;
 
-            return Some(&self.body[start..end]);
+                Some(&body[start..end])
+            },
+            _ => None,
         }
-
-        None
     }
 
     pub fn value(&self) -> Option<&[u8]> {
-        let start: usize = self.extras_length as usize + self.key_length as usize;
-        if self.body_length as usize > start {
-            return Some(&self.body[start..]);
-        }
+        match self.body {
+            Some(ref body) if self.body_length > 0 => {
+                let start: usize = self.extras_length as usize + self.key_length as usize;
 
-        None
+                Some(&body[start..])
+            },
+            _ => None,
+        }
     }
 
     pub fn try_from(raw: &[u8]) -> Result<Response, io::Error> {
@@ -112,11 +118,13 @@ impl Response {
             body_length: cursor.read_u32::<NetworkEndian>()?,
             opaque: cursor.read_u32::<NetworkEndian>()?,
             cas: cursor.read_u64::<NetworkEndian>()?,
-            body: vec![],
+            body: None,
         };
 
         if response.body_length > 0 {
-            cursor.read_to_end(&mut response.body)?;
+            let mut body: Vec<u8> = Vec::with_capacity(response.body_length as usize);
+            cursor.read_to_end(&mut body)?;
+            response.body = Some(body.into_boxed_slice());
         }
 
         Ok(response)
