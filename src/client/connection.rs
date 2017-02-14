@@ -1,9 +1,8 @@
-use std::convert::AsRef;
-
 use tokio_core::net::TcpStream;
 use tokio_service::Service;
 use tokio_proto::pipeline::ClientService;
 use futures::{Future, BoxFuture, future};
+use serde::Serialize;
 
 use super::protocol::{MemcachedProto};
 use protocol::{Request, Response, Command, extras};
@@ -26,14 +25,14 @@ impl Connection {
         self.call(req)
     }
 
-    pub fn get<T: AsRef<[u8]>>(&self, key: T) -> ResponseFuture {
+    pub fn get<T: Serialize>(&self, key: T) -> ResponseFuture {
         let mut request = Request::new(Command::Get);
         request.set_key(key);
 
         self.send(request)
     }
 
-    pub fn set<T: AsRef<[u8]>>(&self, key: T, value: T, extras: extras::SetExtras) -> ResponseFuture {
+    pub fn set<T: Serialize>(&self, key: T, value: T, extras: extras::SetExtras) -> ResponseFuture {
         let mut request = Request::new(Command::Set);
         request.set_key(key);
         request.set_value(value);

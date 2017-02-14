@@ -11,6 +11,9 @@ extern crate tokio_core;
 extern crate tokio_service;
 extern crate tokio_proto;
 extern crate byteorder;
+extern crate serde;
+extern crate rmp_serde;
+
 #[macro_use] extern crate enum_primitive;
 #[macro_use] extern crate log;
 

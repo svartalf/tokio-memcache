@@ -1,8 +1,10 @@
 use std::io;
 use std::fmt;
-use std::convert::AsRef;
+use std::boxed::Box;
 
 use byteorder::{NetworkEndian, WriteBytesExt};
+use serde::Serialize;
+use rmp_serde::Serializer;
 
 use super::Extras;
 use ::protocol::{Magic, Command, DataType};
@@ -19,9 +21,9 @@ pub struct Request {
     cas: u64,
 
     // body
-    extras: Option<Vec<u8>>,
-    key: Option<Vec<u8>>,
-    value: Option<Vec<u8>>,
+    extras: Option<Box<[u8]>>,
+    key: Option<Box<[u8]>>,
+    value: Option<Box<[u8]>>,
 }
 
 impl Request {
@@ -57,9 +59,12 @@ impl Request {
     /// let mut request = Request::new(Command::Get);
     /// request.set_key(b"Hello");
     /// ```
-    pub fn set_key<T: AsRef<[u8]>>(&mut self, key: T) {
-        self.key_length = key.as_ref().len() as u16; // TODO: Possible value truncation
-        self.key = Some(key.as_ref().to_owned());
+    pub fn set_key<T: Serialize>(&mut self, key: T) {
+        let mut buf = Vec::new();
+        key.serialize(&mut Serializer::new(&mut buf)).expect("Failed to set key");
+
+        self.key_length = buf.len() as u16; // TODO: Possible value truncation
+        self.key = Some(buf.into_boxed_slice());
         self.body_length += self.key_length as u32;
     }
 
@@ -72,9 +77,12 @@ impl Request {
     /// request.set_key(b"Hello");
     /// request.set_value(b"World");
     /// ```
-    pub fn set_value<T: AsRef<[u8]>>(&mut self, value: T) {
-        self.body_length += value.as_ref().len() as u32; // TODO: Possible value truncation
-        self.value = Some(value.as_ref().to_owned());
+    pub fn set_value<T: Serialize>(&mut self, value: T) {
+        let mut buf = Vec::new();
+        value.serialize(&mut Serializer::new(&mut buf)).expect("Failed to set value");
+
+        self.body_length += buf.len() as u32; // TODO: Possible value truncation
+        self.value = Some(buf.into_boxed_slice());
     }
 
     pub fn set_extras<T: Extras>(&mut self, extras: T) {
@@ -82,7 +90,7 @@ impl Request {
         extras.write(&mut buf).expect("Failed to set extras");
 
         self.extras_length = buf.len() as u8; // TODO: Possible value truncation
-        self.extras = Some(buf);
+        self.extras = Some(buf.into_boxed_slice());
         self.body_length += self.extras_length as u32;
     }
 
