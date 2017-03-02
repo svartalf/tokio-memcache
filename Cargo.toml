@@ -12,6 +12,7 @@ license = "Apache-2.0"
 [features]
 default = []
 nightly = ["clippy"]
+with-serde = ["serde", "rmp-serde"]
 
 [dependencies]
 futures = "~0.1"
@@ -21,7 +22,8 @@ tokio-proto = "~0.1"
 byteorder = "~1.0"
 enum_primitive = "~0.1"
 log = "~0.3"
-# serde = "*"
-# rmp-serde = "*"
+
+serde = { version = "*", optional = true }
+rmp-serde = { version = "*", optional = true }
 
 clippy = { version = "0.0.116", optional = true }
