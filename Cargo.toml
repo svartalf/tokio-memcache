@@ -12,6 +12,8 @@ license = "Apache-2.0"
 [features]
 default = []
 nightly = ["clippy"]
+# TODO: Since Cargo features are addictive, `with-serde` may break everything eventually
+# if one copy of library will be compiled with it and another without it in one application.
 with-serde = ["serde", "rmp-serde"]
 
 [dependencies]
