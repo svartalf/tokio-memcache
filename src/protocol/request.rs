@@ -3,11 +3,10 @@ use std::fmt;
 use std::boxed::Box;
 
 use byteorder::{NetworkEndian, WriteBytesExt};
-use serde::Serialize;
-use rmp_serde::Serializer;
 
 use super::Extras;
 use ::protocol::{Magic, Command, DataType};
+use types::AsArgument;
 
 /// Memcached request instance. In case if you need to construct request manually.
 pub struct Request {
@@ -59,12 +58,11 @@ impl Request {
     /// let mut request = Request::new(Command::Get);
     /// request.set_key(b"Hello");
     /// ```
-    pub fn set_key<T: Serialize>(&mut self, key: T) {
-        let mut buf = Vec::new();
-        key.serialize(&mut Serializer::new(&mut buf)).expect("Failed to set key");
+    pub fn set_key<T>(&mut self, key: &T) where T: AsArgument {
+        let value = key.as_boxed_slice();
 
-        self.key_length = buf.len() as u16; // TODO: Possible value truncation
-        self.key = Some(buf.into_boxed_slice());
+        self.key_length = value.len() as u16; // TODO: Possible value truncation
+        self.key = Some(value);
         self.body_length += self.key_length as u32;
     }
 
@@ -77,12 +75,11 @@ impl Request {
     /// request.set_key(b"Hello");
     /// request.set_value(b"World");
     /// ```
-    pub fn set_value<T: Serialize>(&mut self, value: T) {
-        let mut buf = Vec::new();
-        value.serialize(&mut Serializer::new(&mut buf)).expect("Failed to set value");
+    pub fn set_value<T>(&mut self, value: &T) where T: AsArgument {
+        let value = value.as_boxed_slice();
 
-        self.body_length += buf.len() as u32; // TODO: Possible value truncation
-        self.value = Some(buf.into_boxed_slice());
+        self.body_length += value.len() as u32; // TODO: Possible value truncation
+        self.value = Some(value);
     }
 
     pub fn set_extras<T: Extras>(&mut self, extras: T) {

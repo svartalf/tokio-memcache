@@ -3,6 +3,7 @@ use std::fmt;
 use std::str;
 use std::error::Error;
 use std::convert;
+use std::string::FromUtf8Error;
 
 use protocol::Response;
 
@@ -11,6 +12,7 @@ use protocol::Response;
 pub enum ErrorKind {
     Io(io::Error),
     Response(Response),
+    Parse,
 }
 
 #[derive(Debug)]
@@ -25,6 +27,7 @@ impl Error for MemcacheError {
             ErrorKind::Response(ref resp) => {
                 str::from_utf8(resp.value().unwrap_or(b"Unknown")).expect("Failed to parse memcached response")
             },
+            ErrorKind::Parse => "TODO"
         }
     }
 
@@ -54,6 +57,14 @@ impl convert::From<Response> for MemcacheError {
     fn from(resp: Response) -> Self {
         MemcacheError {
             kind: ErrorKind::Response(resp)
+        }
+    }
+}
+
+impl convert::From<FromUtf8Error> for MemcacheError {
+    fn from(err: FromUtf8Error) -> Self {
+        MemcacheError {
+            kind: ErrorKind::Parse,
         }
     }
 }

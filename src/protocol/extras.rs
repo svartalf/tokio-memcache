@@ -19,9 +19,9 @@ impl IntoValue for GetExtras {
 }
 impl Extras for GetExtras {}
 
-type GetQExtras = GetExtras;
-type GetKExtras = GetExtras;
-type GetKQExtras = GetExtras;
+pub type GetQExtras = GetExtras;
+pub type GetKExtras = GetExtras;
+pub type GetKQExtras = GetExtras;
 
 /// Extras for `set`/`add`/`replace` commands
 #[derive(Default)]
@@ -38,8 +38,8 @@ impl IntoValue for SetExtras {
 }
 impl Extras for SetExtras {}
 
-type AddExtras = SetExtras;
-type ReplaceExtras = SetExtras;
+pub type AddExtras = SetExtras;
+pub type ReplaceExtras = SetExtras;
 
 /// Extras for `incr`/`decr` commands
 #[derive(Default)]
@@ -58,4 +58,4 @@ impl IntoValue for IncrExtras {
 }
 impl Extras for IncrExtras {}
 
-type DecrExtras = IncrExtras;
+pub type DecrExtras = IncrExtras;

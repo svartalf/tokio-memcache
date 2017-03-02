@@ -14,15 +14,12 @@ fn main() {
 
     let res = Client::connect(&addr, &lp.handle())
         .and_then(|conn| {
-            conn.set(b"Hello", b"world", extras::SetExtras{
-                expiration: 3600,
-                ..Default::default()
-            }).and_then(move |_| {
-                conn.get(b"Hello")
-            })
-        })
-    ;
+            conn.set(b"Hello", b"world", 3600)
+                .and_then(move |_| {
+                    conn.get(b"Hello")
+                })
+        });
 
-    let val = lp.run(res).unwrap();
-    println!("{:?}", val.value());
+    let val: Vec<u8> = lp.run(res).unwrap();
+    println!("{:?}", val);
 }
