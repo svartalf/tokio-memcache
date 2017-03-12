@@ -6,7 +6,7 @@ use futures::{future, Future, BoxFuture};
 use super::protocol::{MemcachedProto};
 use protocol::{Request, Response, Command, extras};
 use errors::MemcacheError;
-use types::{AsArgument, FromResponse};
+use types::{AsArgument, FromResponse, Expiration};
 
 type Result<T> = BoxFuture<T, MemcacheError>;
 
@@ -29,28 +29,26 @@ impl Connection {
         }).boxed()
     }
 
-    // TODO: Replace `expiration` with `std::time::Duration`
-    pub fn set<K, V>(&self, key: &K, value: &V, expiration: u32) -> Result<()>
-            where K: AsArgument, V: AsArgument {
+    pub fn set<K, V, E>(&self, key: &K, value: &V, expiration: E) -> Result<()>
+            where K: AsArgument, V: AsArgument, E: Expiration {
         let mut request = Request::new(Command::Set);
         request.set_key(key);
         request.set_value(value);
         request.set_extras(extras::SetExtras{
             flags: 0,
-            expiration: expiration,
+            expiration: expiration.as_value(),
         });
 
         self.send(request).and_then(|_| future::ok(())).boxed()
     }
 
-    // TODO: replace `expiration` with `std::time::Duration`
-    pub fn add<K, V>(&self, key: &K, value: &V, expiration: u32) -> BoxFuture<(), MemcacheError>
-        where K: AsArgument, V: AsArgument {
+    pub fn add<K, V, E>(&self, key: &K, value: &V, expiration: E) -> BoxFuture<(), MemcacheError>
+        where K: AsArgument, V: AsArgument, E: Expiration {
         let mut request = Request::new(Command::Add);
         request.set_key(key);
         request.set_extras(extras::AddExtras{
             flags: 0,
-            expiration: expiration,
+            expiration: expiration.as_value(),
         });
         request.set_value(value);
 

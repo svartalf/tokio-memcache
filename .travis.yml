@@ -7,6 +7,8 @@ rust:
   - stable
   - beta
   - nightly
+env:
+  RUST_BACKTRACE=1
 script:
   - ([ $TRAVIS_RUST_VERSION == nightly ] || cargo build)
   - ([ $TRAVIS_RUST_VERSION != nightly ] || cargo build --features nightly)
