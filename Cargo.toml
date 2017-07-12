@@ -6,7 +6,6 @@ repository = "https://github.com/svartalf/tokio-memcache"
 authors = ["svartalf <self@svartalf.info>"]
 keywords = ["tokio", "futures", "memcache", "memcached"]
 categories = ["asynchronous", "caching"]
-travis-ci = { repository = "https://github.com/svartalf/tokio-memcache", branch = "master" }
 license = "Apache-2.0"
 
 [features]
@@ -26,3 +25,6 @@ enum_primitive = "0.1.1"
 # rmp-serde = "*"
 
 clippy = { version = "^0.0", optional = true }
+
+[badges]
+travis-ci = { repository = "https://github.com/svartalf/tokio-memcache", branch = "master" }
