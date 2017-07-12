@@ -1,14 +1,15 @@
 use std::io;
 
-use tokio_core::io::{Io, Framed};
 use tokio_proto::pipeline::ClientProto;
+use tokio_io::codec::{Framed};
+use tokio_io::{AsyncRead, AsyncWrite};
 
 use protocol::{Request, Response};
 use super::codec::BinaryCodec;
 
 pub struct MemcachedProto;
 
-impl<T: Io + 'static> ClientProto<T> for MemcachedProto {
+impl<T: AsyncRead + AsyncWrite + 'static> ClientProto<T> for MemcachedProto {
     type Request = Request;
     type Response = Response;
     type Transport = Framed<T, BinaryCodec>;

@@ -2,7 +2,8 @@ use std::io;
 use std::fmt;
 use std::boxed::Box;
 
-use byteorder::{NetworkEndian, WriteBytesExt};
+use bytes::BufMut;
+use byteorder::{NetworkEndian};
 
 use super::Extras;
 use ::protocol::{Magic, Command, DataType};
@@ -98,27 +99,27 @@ impl Request {
     /// Returns an [`std::io::Error`][Error] if write had failed somehow.
     ///
     /// [Error]: ../../std/io/struct.Error.html
-    pub fn write<T: io::Write>(&self, out: &mut T) -> io::Result<()> {
-        out.write_u8(Magic::Request as u8)?;
-        out.write_u8(self.opcode as u8)?;
-        out.write_u16::<NetworkEndian>(self.key_length)?;
-        out.write_u8(self.extras_length)?;
-        out.write_u8(self.data_type as u8)?;
-        out.write_u16::<NetworkEndian>(self.vbucket_id)?;
-        out.write_u32::<NetworkEndian>(self.body_length)?;
-        out.write_u32::<NetworkEndian>(self.opaque)?;
-        out.write_u64::<NetworkEndian>(self.cas)?;
+    pub fn write<T: BufMut>(&self, out: &mut T) -> io::Result<()> {
+        out.put_u8(Magic::Request as u8);
+        out.put_u8(self.opcode as u8);
+        out.put_u16::<NetworkEndian>(self.key_length);
+        out.put_u8(self.extras_length);
+        out.put_u8(self.data_type as u8);
+        out.put_u16::<NetworkEndian>(self.vbucket_id);
+        out.put_u32::<NetworkEndian>(self.body_length);
+        out.put_u32::<NetworkEndian>(self.opaque);
+        out.put_u64::<NetworkEndian>(self.cas);
 
         if let Some(ref extras) = self.extras {
-            out.write_all(extras)?;
+            out.put_slice(extras);
         }
 
         if let Some(ref key) = self.key {
-            out.write_all(key)?;
+            out.put_slice(key);
         }
 
         if let Some(ref value) = self.value {
-            out.write_all(value)?;
+            out.put_slice(value);
         }
 
         Ok(())

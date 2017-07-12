@@ -62,7 +62,7 @@ impl convert::From<Response> for MemcacheError {
 }
 
 impl convert::From<FromUtf8Error> for MemcacheError {
-    fn from(err: FromUtf8Error) -> Self {
+    fn from(_err: FromUtf8Error) -> Self {
         MemcacheError {
             kind: ErrorKind::Parse,
         }

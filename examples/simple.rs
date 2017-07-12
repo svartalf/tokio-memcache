@@ -2,7 +2,6 @@ extern crate futures;
 extern crate tokio_core;
 extern crate tokio_memcache;
 
-use std::default::Default;
 use futures::Future;
 use tokio_core::reactor::Core;
 
