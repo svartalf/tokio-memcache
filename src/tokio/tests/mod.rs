@@ -1,0 +1,1 @@
+mod codec_serialization;

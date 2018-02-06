@@ -1,15 +1,10 @@
-use std::io;
-use std::io::Read;
 use std::fmt;
 
-use enum_primitive::FromPrimitive;
-use byteorder::{NetworkEndian, ReadBytesExt};
-
-use ::protocol::{Magic, Command, DataType};
+use protocol::{Magic, Command, DataType};
 
 enum_from_primitive! {
     /// Response status variants
-    #[derive(Debug, PartialEq)]
+    #[derive(Debug, Copy, Clone, PartialEq)]
     pub enum Status {
         Ok = 0x0000,
         KeyNotFound = 0x0001,
@@ -30,21 +25,25 @@ enum_from_primitive! {
     }
 }
 
-/// Parsed `memcached` response.
 pub struct Response {
-    // We are not storing `magic` byte, because it is always the same and is not required by clients
-    opcode: Command,
-    key_length: u16,
-    extras_length: u8,
-    data_type: DataType,
-    status: Status,
-    body_length: u32,
-    opaque: u32,
-    cas: u64,
-    body: Vec<u8>,
+    // TODO: Get rid of the `pub(crate)`
+    pub(crate) magic: Magic,
+    pub(crate) opcode: Command,
+    pub(crate) key_length: u16,
+    pub(crate) extras_length: u8,
+    pub(crate) data_type: DataType,
+    pub(crate) status: Status,
+    pub(crate) body_length: u32,
+    pub(crate) opaque: u32,
+    pub(crate) cas: u64,
+    pub(crate) body: Vec<u8>,
 }
 
 impl Response {
+    pub fn magic(&self) -> &Magic {
+        &self.magic
+    }
+
     pub fn command(&self) -> &Command {
         &self.opcode
     }
@@ -93,42 +92,6 @@ impl Response {
         None
     }
 
-    pub fn try_from(raw: &[u8]) -> Result<Response, io::Error> {
-        let mut cursor = io::Cursor::new(raw);
-        let magic = cursor.read_u8()?;
-        if magic != Magic::Response as u8 {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid packet received"));
-        }
-
-        let mut response = Response {
-            opcode: Command::from_u8(cursor.read_u8()?)
-                .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Unknown command"))?,
-            key_length: cursor.read_u16::<NetworkEndian>()?,
-            extras_length: cursor.read_u8()?,
-            data_type: DataType::from_u8(cursor.read_u8()?)
-                .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Unknown data type"))?,
-            status: Status::from_u16(cursor.read_u16::<NetworkEndian>()?)
-                .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Unknown status"))?,
-            body_length: cursor.read_u32::<NetworkEndian>()?,
-            opaque: cursor.read_u32::<NetworkEndian>()?,
-            cas: cursor.read_u64::<NetworkEndian>()?,
-            body: vec![],
-        };
-
-        if response.body_length > 0 {
-            cursor.read_to_end(&mut response.body)?;
-        }
-
-        Ok(response)
-    }
-
-    pub fn is_ok(&self) -> bool {
-        self.status == Status::Ok
-    }
-
-    pub fn is_err(&self) -> bool {
-        !self.is_ok()
-    }
 }
 
 impl fmt::Debug for Response {

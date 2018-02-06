@@ -2,7 +2,7 @@ enum_from_primitive! {
 
     /// Available protocol commands
     ///
-    /// Reference: https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#command-opcodes
+    /// Reference: <https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#command-opcodes>
     #[derive(Debug, PartialEq, Copy, Clone)]
     pub enum Command {
         Get = 0x00,
@@ -63,5 +63,35 @@ enum_from_primitive! {
         TapVBucketSet = 0x45,
         TapCheckpointStart = 0x46,
         TapCheckpointEnd = 0x47,
+    }
+}
+
+impl Command {
+    /// Check if Memcached should not return a response for that kind of request
+    pub fn is_quiet(&self) -> bool {
+        match *self {
+            Command::GetQ |
+            Command::GetKQ |
+            Command::SetQ |
+            Command::AddQ |
+            Command::ReplaceQ |
+            Command::DeleteQ |
+            Command::IncrementQ |
+            Command::DecrementQ |
+            Command::QuitQ |
+            Command::FlushQ |
+            Command::AppendQ |
+            Command::PrependQ |
+            Command::GatQ |
+            Command::RSetQ |
+            Command::RAppendQ |
+            Command::RPrependQ |
+            Command::RDeleteQ |
+            Command::RIncrQ |
+            Command::RDecrQ
+                => true,
+            _ => false,
+        }
+
     }
 }

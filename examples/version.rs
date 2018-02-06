@@ -2,6 +2,7 @@ extern crate futures;
 extern crate tokio_core;
 extern crate tokio_memcache;
 
+use std::str;
 use std::error::Error;
 
 use futures::Future;
@@ -15,16 +16,16 @@ fn main() {
 
     let res = Client::connect(&addr, &lp.handle())
         .and_then(|conn| {
-            let key = b"hello";
-            conn.get(key)
+            conn.version()
         });
 
     lp.run(res)
         .map(|response| {
-            println!("Got a response: {:?}", response);
+            match response.value() {
+                Some(bytes) => println!("Memcached version: {}", str::from_utf8(bytes).unwrap()),
+                None => println!("Got an invalid response")
+            }
         }).map_err(|error| {
-            // Probably you will see that line with a "Not found" text.
-            // And it means that everything is working as intended.
             println!("Got an error: {}", error.description());
         });
 }
