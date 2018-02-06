@@ -1,4 +1,4 @@
-use bytes::ByteOrder;
+use bytes::{BytesMut, BufMut};
 use byteorder::NetworkEndian;
 
 use super::Extras;
@@ -84,9 +84,22 @@ impl Get {
 
 impl Extras for Get {
     fn to_vec(&self) -> Vec<u8> {
-        let mut vec = Vec::with_capacity(4);
-        NetworkEndian::write_u32(&mut vec, self.flags);
+        let mut buf = BytesMut::with_capacity(4);
+        buf.put_u32::<NetworkEndian>(self.flags);
 
-        vec
+        buf.to_vec()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Get, Extras};
+
+    #[test]
+    fn test_to_vec() {
+        let extras = Get::new(0xdeadbeef);
+        let expected = vec![0xdeu8, 0xad, 0xbe, 0xef];
+
+        assert_eq!(extras.to_vec(), expected);
     }
 }

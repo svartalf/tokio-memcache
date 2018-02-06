@@ -1,4 +1,4 @@
-use bytes::ByteOrder;
+use bytes::{BytesMut, BufMut};
 use byteorder::NetworkEndian;
 
 use super::Extras;
@@ -40,10 +40,10 @@ impl Flush {
 
 impl Extras for Flush {
     fn to_vec(&self) -> Vec<u8> {
-        let mut vec = Vec::with_capacity(4);
-        NetworkEndian::write_u32(&mut vec, self.expiration);
+        let mut buf = BytesMut::with_capacity(4);
+        buf.put_u32::<NetworkEndian>(self.expiration);
 
-        vec
+        buf.to_vec()
     }
 }
 
@@ -52,3 +52,17 @@ impl Extras for Flush {
 /// It is an alias for [Flush](struct.Flush.html) struct,
 /// see [the module documentation](struct.Flush.html) for more.
 pub type FlushQ = Flush;
+
+#[cfg(test)]
+mod tests {
+    use bytes::Bytes;
+    use super::{Flush, Extras};
+
+    #[test]
+    fn test_to_vec() {
+        let extras = Flush::new(3600);
+        let expected = Bytes::from_static(&[0x00, 0x00, 0x0e, 0x10]);
+
+        assert_eq!(extras.to_vec(), expected);
+    }
+}

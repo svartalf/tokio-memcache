@@ -1,4 +1,4 @@
-use bytes::ByteOrder;
+use bytes::{BytesMut, BufMut};
 use byteorder::NetworkEndian;
 
 use super::Extras;
@@ -35,9 +35,9 @@ impl Verbosity {
 
 impl Extras for Verbosity {
     fn to_vec(&self) -> Vec<u8> {
-        let mut vec = Vec::with_capacity(4);
-        NetworkEndian::write_u32(&mut vec, self.verbosity);
+        let mut buf = BytesMut::with_capacity(4);
+        buf.put_u32::<NetworkEndian>(self.verbosity);
 
-        vec
+        buf.to_vec()
     }
 }

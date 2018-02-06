@@ -1,4 +1,4 @@
-use bytes::ByteOrder;
+use bytes::{BytesMut, BufMut};
 use byteorder::NetworkEndian;
 
 use super::Extras;
@@ -149,11 +149,11 @@ impl Increment {
 
 impl Extras for Increment {
     fn to_vec(&self) -> Vec<u8> {
-        let mut vec = Vec::with_capacity(20);
-        NetworkEndian::write_u64(&mut vec, self.amount);
-        NetworkEndian::write_u64(&mut vec, self.initial);
-        NetworkEndian::write_u32(&mut vec, self.expiration);
+        let mut buf = BytesMut::with_capacity(20);
+        buf.put_u64::<NetworkEndian>(self.amount);
+        buf.put_u64::<NetworkEndian>(self.initial);
+        buf.put_u32::<NetworkEndian>(self.expiration);
 
-        vec
+        buf.to_vec()
     }
 }

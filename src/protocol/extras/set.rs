@@ -1,7 +1,7 @@
 use std::fmt;
 use std::default::Default;
 
-use bytes::ByteOrder;
+use bytes::{BytesMut, BufMut};
 use byteorder::NetworkEndian;
 
 use super::Extras;
@@ -78,12 +78,11 @@ impl Set {
 
 impl Extras for Set {
     fn to_vec(&self) -> Vec<u8> {
-        let mut vec = vec![0x00u8, 8];
+        let mut buf = BytesMut::with_capacity(8);
+        buf.put_u32::<NetworkEndian>(self.flags);
+        buf.put_u32::<NetworkEndian>(self.expiration);
 
-        NetworkEndian::write_u32(&mut vec, self.flags);
-        NetworkEndian::write_u32(&mut vec, self.expiration);
-
-        vec
+        buf.to_vec()
     }
 }
 
@@ -102,6 +101,19 @@ impl fmt::Debug for Set {
             .field("flags", &self.flags)
             .field("expiration", &self.expiration)
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Set, Extras};
+
+    #[test]
+    fn test_to_vec() {
+        let extras = Set::new(0xdeadbeef, 3600);
+        let expected = vec![0xdeu8, 0xad, 0xbe, 0xef, 0x00, 0x00, 0x0e, 0x10];
+
+        assert_eq!(extras.to_vec(), expected);
     }
 }
 
