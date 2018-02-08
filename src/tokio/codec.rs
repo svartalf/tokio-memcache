@@ -1,9 +1,12 @@
 use std::io::{self, Read};
+use std::marker::PhantomData;
 
 use bytes::{BytesMut, BufMut, ByteOrder};
 use tokio_io::codec::{Encoder, Decoder};
 use byteorder::{NetworkEndian, ReadBytesExt};
 use enum_primitive::FromPrimitive;
+use serde::Serialize;
+use serde_json;
 
 use protocol::{Request, Response, Magic, DataType, Command, Status};
 
@@ -11,18 +14,24 @@ const HEADER_LENGTH: usize = 24;
 
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct MemcacheCodec;
+pub struct MemcacheCodec<K> {
+    _key: PhantomData<K>,
+}
 
-impl Encoder for MemcacheCodec {
-    type Item = Request;
+impl<K> Encoder for MemcacheCodec<K> where K: Serialize {
+    type Item = Request<K>;
     type Error = io::Error;
 
     fn encode(&mut self, item: Self::Item, dst: &mut BytesMut) -> Result<(), Self::Error> {
         // TODO: Handle lossless conversion
         // TODO: Seems not very efficient
-        let key_length: u16 = match *item.key() {
-            Some(ref key) => key.len() as u16,
-            None => 0,
+        let (key, key_length) = match *item.key() {
+            None => (None, 0),
+            Some(ref key) => {
+                let key_bytes = serde_json::to_vec(key)?;
+                let length = key_bytes.len();
+                (Some(key_bytes), length)
+            }
         };
 
         let extras_length: u8 = match *item.extras() {
@@ -39,7 +48,7 @@ impl Encoder for MemcacheCodec {
 
         dst.put_u8(Magic::Request as u8);
         dst.put_u8(*item.command() as u8);
-        dst.put_u16::<NetworkEndian>(key_length);
+        dst.put_u16::<NetworkEndian>(key_length as u16);
         dst.put_u8(extras_length);
         dst.put_u8(*item.data_type() as u8);
         dst.put_u16::<NetworkEndian>(*item.vbucket_id());
@@ -51,8 +60,8 @@ impl Encoder for MemcacheCodec {
             dst.put_slice(extras);
         }
 
-        if let Some(ref key) = *item.key() {
-            dst.put_slice(key);
+        if let Some(ref key) = key {
+            dst.put_slice(&key);
         }
 
         if let Some(ref value) = *item.value() {
@@ -63,7 +72,7 @@ impl Encoder for MemcacheCodec {
     }
 }
 
-impl Decoder for MemcacheCodec {
+impl<K> Decoder for MemcacheCodec<K> {
     type Item = Response;
     type Error = io::Error;
 
@@ -88,7 +97,13 @@ impl Decoder for MemcacheCodec {
 
 }
 
-impl MemcacheCodec {
+impl<K> MemcacheCodec<K> {
+    pub fn new() -> MemcacheCodec<K> {
+        MemcacheCodec {
+            _key: PhantomData,
+        }
+    }
+
     /// Read `Response` from the properly-sized byte array
     fn read_response(src: &mut BytesMut) -> Result<Option<<Self as Decoder>::Item>, <Self as Decoder>::Error> {
         let mut cursor = io::Cursor::new(src);

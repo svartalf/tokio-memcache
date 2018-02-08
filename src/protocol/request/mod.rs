@@ -18,13 +18,12 @@ mod builder;
 /// Creating a `Request` to send
 ///
 /// ```
-///
 /// use tokio_memcache::protocol::Request;
 ///
 /// let mut request = Request::new();
-/// *request.key_mut() = Some(b"some-cached-value".to_vec());
+/// *request.key_mut() = Some("some-cached-value");
 /// ```
-pub struct Request {
+pub struct Request<K> {
     magic: Magic,
     opcode: Command,
     data_type: DataType,
@@ -33,11 +32,11 @@ pub struct Request {
     cas: u64,
 
     extras: Option<Vec<u8>>,
-    key: Option<Vec<u8>>,
+    key: Option<K>,
     value: Option<Vec<u8>>,
 }
 
-impl Request {
+impl<K> Request<K> {
 
     /// Create a new blank `Request`.
     ///
@@ -48,9 +47,9 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let request = Request::new();
+    /// let request: Request<()> = Request::new();
     /// ```
-    pub fn new() -> Request {
+    pub fn new() -> Request<K> {
         Request {
             ..Self::default()
         }
@@ -59,7 +58,7 @@ impl Request {
     /// Creates a new builder-style object to manufacture a `Request`.
     ///
     /// This method returns an instance of `Builder` which can be used to create a `Request`.
-    pub fn build(command: Command) -> Builder {
+    pub fn build(command: Command) -> Builder<K> {
         Builder::new(command)
     }
 
@@ -70,7 +69,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::{Request, Command};
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     /// *request.command_mut() = Command::Set;
     ///
     /// assert_eq!(*request.command(), Command::Set);
@@ -89,7 +88,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::{Request, Command};
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     /// *request.command_mut() = Command::Get;
     /// ```
     pub fn command_mut(&mut self) -> &mut Command {
@@ -103,7 +102,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::{Request, DataType};
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     ///
     /// assert_eq!(*request.data_type(), DataType::RawBytes);
     /// ```
@@ -118,7 +117,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::{Request, DataType};
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     /// *request.data_type_mut() = DataType::RawBytes;
     /// ```
     pub fn data_type_mut(&mut self) -> &mut DataType {
@@ -132,7 +131,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     ///
     /// assert_eq!(*request.vbucket_id(), 0);
     /// ```
@@ -147,7 +146,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     /// *request.vbucket_id_mut() = 5;
     ///
     /// assert_eq!(*request.vbucket_id(), 5);
@@ -163,7 +162,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     ///
     /// assert_eq!(*request.opaque(), 0);
     /// ```
@@ -178,7 +177,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     /// *request.opaque_mut() = 5;
     ///
     /// assert_eq!(*request.opaque(), 5);
@@ -194,7 +193,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     ///
     /// assert_eq!(*request.cas(), 0);
     /// ```
@@ -209,7 +208,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     /// *request.cas_mut() = 42;
     ///
     /// assert_eq!(*request.cas(), 42);
@@ -225,7 +224,7 @@ impl Request {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request = Request::new();
+    /// let mut request: Request<()> = Request::new();
     ///
     /// assert!(request.extras().is_none());
     /// ```
@@ -256,11 +255,11 @@ impl Request {
         &mut self.extras
     }
 
-    pub fn key(&self) -> &Option<Vec<u8>> {
+    pub fn key(&self) -> &Option<K> {
         &self.key
     }
 
-    pub fn key_mut(&mut self) -> &mut Option<Vec<u8>> {
+    pub fn key_mut(&mut self) -> &mut Option<K> {
         &mut self.key
     }
 
@@ -275,7 +274,7 @@ impl Request {
 }
 
 
-impl fmt::Debug for Request {
+impl<K> fmt::Debug for Request<K> where K: fmt::Debug {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Request")
             .field("command", &self.opcode)
@@ -290,7 +289,7 @@ impl fmt::Debug for Request {
 }
 
 
-impl default::Default for Request {
+impl<K> default::Default for Request<K> {
     fn default() -> Self {
         Request {
             magic: Magic::Request,

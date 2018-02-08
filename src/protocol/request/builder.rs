@@ -1,11 +1,11 @@
 use protocol::{Request, Command};
 
 
-pub struct Builder(Request);
+pub struct Builder<K>(Request<K>);
 
-impl Builder {
+impl<K> Builder<K> {
 
-    pub fn new(command: Command) -> Builder {
+    pub fn new(command: Command) -> Builder<K> {
         Builder(Request::new()).command(command)
     }
 
@@ -34,7 +34,7 @@ impl Builder {
         self
     }
 
-    pub fn key(mut self, value: Option<Vec<u8>>) -> Self {
+    pub fn key(mut self, value: Option<K>) -> Self {
         *self.0.key_mut() = value;
         self
     }
@@ -44,7 +44,7 @@ impl Builder {
         self
     }
 
-    pub fn finish(self) -> Request {
+    pub fn finish(self) -> Request<K> {
         self.0
     }
 }
