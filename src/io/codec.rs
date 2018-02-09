@@ -1,12 +1,9 @@
 use std::io::{self, Read};
-use std::marker::PhantomData;
 
 use bytes::{BytesMut, BufMut, ByteOrder};
 use tokio_io::codec::{Encoder, Decoder};
 use byteorder::{NetworkEndian, ReadBytesExt};
 use enum_primitive::FromPrimitive;
-use serde::Serialize;
-use serde_json;
 
 use protocol::{Request, Response, Magic, DataType, Command, Status};
 
@@ -14,8 +11,8 @@ const HEADER_LENGTH: usize = 24;
 
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct MemcacheCodec {
-}
+pub struct MemcacheCodec {}
+
 
 impl Encoder for MemcacheCodec {
     type Item = Request;
@@ -24,7 +21,7 @@ impl Encoder for MemcacheCodec {
     fn encode(&mut self, item: Self::Item, dst: &mut BytesMut) -> Result<(), Self::Error> {
         // TODO: Handle lossless conversion
         // TODO: Seems not very efficient
-        let (key, key_length) = match *item.raw_key() {
+        let (key, key_length) = match *item.key() {
             None => (None, 0),
             Some(ref key) => {
                 (Some(key), key.len() as u32)
@@ -36,7 +33,7 @@ impl Encoder for MemcacheCodec {
             None => 0,
         };
 
-        let (value, value_length) = match *item.raw_value() {
+        let (value, value_length) = match *item.value() {
             None => (None, 0),
             Some(ref value) => {
                 (Some(value), value.len() as u32)

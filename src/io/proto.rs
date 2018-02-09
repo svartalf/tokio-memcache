@@ -1,10 +1,8 @@
 use std::io;
-use std::marker::PhantomData;
 
 use tokio_proto::pipeline::ClientProto;
 use tokio_io::codec::Framed;
 use tokio_io::{AsyncRead, AsyncWrite};
-use serde::Serialize;
 
 use super::codec::MemcacheCodec;
 use protocol::{Request, Response};

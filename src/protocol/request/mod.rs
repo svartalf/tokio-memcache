@@ -1,9 +1,6 @@
 use std::fmt;
 use std::default;
 
-use serde::Serialize;
-use serde_json;
-
 use protocol::{Magic, Command, DataType};
 use self::builder::Builder;
 
@@ -257,40 +254,20 @@ impl Request {
         &mut self.extras
     }
 
-//    pub fn key<K>(&self) -> &Option<K> {
-//        match self.key {
-//            None => &None,
-//            Some(ref bytes) => Some(serde_json::from_slice(bytes).unwrap()),
-//        }
-//    }
-
-    pub fn raw_key(&self) -> &Option<Vec<u8>> {
+    pub fn key(&self) -> &Option<Vec<u8>> {
         &self.key
     }
 
-    pub fn set_key<K>(&mut self, key: Option<K>) where K: Serialize {
-        self.key = match key {
-            None => None,
-            Some(ref object) => Some(serde_json::to_vec(object).unwrap()),
-        }
+    pub fn key_mut(&mut self) -> &mut Option<Vec<u8>> {
+        &mut self.key
     }
 
-//    pub fn value<V>(&self) -> &Option<V> where V: Deserialize<'de> {
-//        match self.key {
-//            None => &None,
-//            Some(ref bytes) => &Some(serde_json::from_slice(bytes).unwrap()),
-//        }
-//    }
-
-    pub fn raw_value(&self) -> &Option<Vec<u8>> {
+    pub fn value(&self) -> &Option<Vec<u8>> {
         &self.value
     }
 
-    pub fn set_value<V>(&mut self, value: Option<V>) where V: Serialize {
-        self.value = match value {
-            None => None,
-            Some(ref object) => Some(serde_json::to_vec(object).unwrap())
-        }
+    pub fn value_mut(&mut self) -> &mut Option<Vec<u8>> {
+        &mut self.value
     }
 
 }

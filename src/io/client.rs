@@ -1,16 +1,13 @@
-use std::marker::PhantomData;
 use std::convert::From;
 use std::net::SocketAddr;
 
 use futures::Future;
 use tokio_core::reactor::Handle;
 use tokio_proto::TcpClient;
-use serde::Serialize;
 
 use super::{MemcacheProto, ClientHandle, Error};
 
-pub struct Client {
-}
+pub struct Client {}
 
 impl Client {
     pub fn connect(addr: &SocketAddr, handle: &Handle) -> Box<Future<Item=ClientHandle, Error=Error>> {

@@ -1,11 +1,9 @@
 use std::convert::From;
-use std::marker::PhantomData;
 
 use futures::Future;
 use tokio_service::Service;
 use tokio_proto::pipeline::ClientService;
 use tokio_core::net::TcpStream;
-use serde::Serialize;
 
 use super::proto::MemcacheProto;
 use super::Error;
