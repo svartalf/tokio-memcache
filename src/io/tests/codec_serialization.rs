@@ -1,7 +1,7 @@
 use bytes::BytesMut;
 use tokio_io::codec::Encoder;
-use tokio::MemcacheCodec;
 
+use io::MemcacheCodec;
 use protocol::{Request, Command, extras};
 
 macro_rules! encode_and_compare {

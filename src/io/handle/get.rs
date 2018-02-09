@@ -2,7 +2,7 @@ use serde::Serialize;
 use tokio_service::Service;
 
 use protocol::{Request, Response, Command};
-use tokio::handle::{ClientHandle, Result};
+use io::handle::{ClientHandle, Result};
 
 
 impl<K> ClientHandle<K> where K: Serialize {

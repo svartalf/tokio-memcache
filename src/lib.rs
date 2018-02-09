@@ -9,7 +9,7 @@ extern crate serde;
 extern crate serde_json;
 #[macro_use] extern crate enum_primitive;
 
-mod tokio;
+mod io;
 pub mod protocol;
 
-pub use tokio::{Client, ClientHandle};
+pub use io::{Client, ClientHandle};

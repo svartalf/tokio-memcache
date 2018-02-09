@@ -1,7 +1,7 @@
 use tokio_service::Service;
 
 use protocol::{Request, Response, Command};
-use tokio::handle::{ClientHandle, Result};
+use io::handle::{ClientHandle, Result};
 
 
 impl ClientHandle<()> {
