@@ -44,7 +44,7 @@ impl<K> Encoder for MemcacheCodec<K> where K: Serialize {
         };
         let body_length: u32 = key_length as u32 + extras_length as u32 + value_length;
 
-        dst.reserve(body_length as usize);
+        dst.reserve(HEADER_LENGTH + body_length as usize);
 
         dst.put_u8(Magic::Request as u8);
         dst.put_u8(*item.command() as u8);
