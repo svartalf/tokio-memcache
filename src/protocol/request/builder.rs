@@ -1,11 +1,14 @@
+use serde::Serialize;
+use serde_json;
+
 use protocol::{Request, Command};
 
 
-pub struct Builder<K>(Request<K>);
+pub struct Builder(Request);
 
-impl<K> Builder<K> {
+impl Builder {
 
-    pub fn new(command: Command) -> Builder<K> {
+    pub fn new(command: Command) -> Builder {
         Builder(Request::new()).command(command)
     }
 
@@ -34,17 +37,19 @@ impl<K> Builder<K> {
         self
     }
 
-    pub fn key(mut self, value: Option<K>) -> Self {
-        *self.0.key_mut() = value;
+    pub fn key<K>(mut self, key: Option<K>) -> Self
+            where K: Serialize {
+        self.0.set_key::<K>(key);
         self
     }
 
-    pub fn value(mut self, value: Option<Vec<u8>>) -> Self {
-        *self.0.value_mut() = value;
+    pub fn value<V>(mut self, value: Option<V>) -> Self
+            where V: Serialize {
+        self.0.set_value(value);
         self
     }
 
-    pub fn finish(self) -> Request<K> {
+    pub fn finish(self) -> Request {
         self.0
     }
 }

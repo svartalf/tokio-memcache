@@ -4,11 +4,11 @@ use protocol::{Request, Response, Command};
 use io::handle::{ClientHandle, Result};
 
 
-impl ClientHandle<()> {
+impl ClientHandle {
 
     // TODO: Should not `quit()` be called on the handle drop?
     pub fn quit(&self) -> Result<Response> {
-        let request: Request<()> = Request::build(Command::Quit)
+        let request: Request = Request::build(Command::Quit)
             .finish();
 
         self.call(request)

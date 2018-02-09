@@ -9,12 +9,11 @@ use serde::Serialize;
 
 use super::{MemcacheProto, ClientHandle, Error};
 
-pub struct Client<K> {
-    _key: PhantomData<K>,
+pub struct Client {
 }
 
-impl<K> Client<K> where K: Serialize {
-    pub fn connect(addr: &SocketAddr, handle: &Handle) -> Box<Future<Item=ClientHandle<K>, Error=Error>> {
+impl Client {
+    pub fn connect(addr: &SocketAddr, handle: &Handle) -> Box<Future<Item=ClientHandle, Error=Error>> {
         let handle = TcpClient::new(MemcacheProto::new())
             .connect(addr, handle)
             .map_err(From::from)

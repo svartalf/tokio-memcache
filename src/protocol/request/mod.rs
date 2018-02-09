@@ -1,6 +1,9 @@
 use std::fmt;
 use std::default;
 
+use serde::Serialize;
+use serde_json;
+
 use protocol::{Magic, Command, DataType};
 use self::builder::Builder;
 
@@ -10,20 +13,19 @@ mod builder;
 ///
 /// A Memcached request have optional key, value and extras fields.
 ///
-/// Key and value fields eventually will be generic, but as for early stages development
-/// they are simple `Vec<u8>`.
+/// Key and value fields are generic and can be any type that implements `serde::Serialize` trait.
 ///
 /// # Examples
 ///
 /// Creating a `Request` to send
 ///
-/// ```
+/// ```ignore
 /// use tokio_memcache::protocol::Request;
 ///
 /// let mut request = Request::new();
 /// *request.key_mut() = Some("some-cached-value");
 /// ```
-pub struct Request<K> {
+pub struct Request {
     magic: Magic,
     opcode: Command,
     data_type: DataType,
@@ -32,11 +34,11 @@ pub struct Request<K> {
     cas: u64,
 
     extras: Option<Vec<u8>>,
-    key: Option<K>,
+    key: Option<Vec<u8>>,
     value: Option<Vec<u8>>,
 }
 
-impl<K> Request<K> {
+impl Request {
 
     /// Create a new blank `Request`.
     ///
@@ -47,9 +49,9 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let request: Request<()> = Request::new();
+    /// let request = Request::new();
     /// ```
-    pub fn new() -> Request<K> {
+    pub fn new() -> Request {
         Request {
             ..Self::default()
         }
@@ -58,7 +60,7 @@ impl<K> Request<K> {
     /// Creates a new builder-style object to manufacture a `Request`.
     ///
     /// This method returns an instance of `Builder` which can be used to create a `Request`.
-    pub fn build(command: Command) -> Builder<K> {
+    pub fn build(command: Command) -> Builder {
         Builder::new(command)
     }
 
@@ -69,7 +71,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::{Request, Command};
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     /// *request.command_mut() = Command::Set;
     ///
     /// assert_eq!(*request.command(), Command::Set);
@@ -88,7 +90,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::{Request, Command};
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     /// *request.command_mut() = Command::Get;
     /// ```
     pub fn command_mut(&mut self) -> &mut Command {
@@ -102,7 +104,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::{Request, DataType};
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     ///
     /// assert_eq!(*request.data_type(), DataType::RawBytes);
     /// ```
@@ -117,7 +119,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::{Request, DataType};
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     /// *request.data_type_mut() = DataType::RawBytes;
     /// ```
     pub fn data_type_mut(&mut self) -> &mut DataType {
@@ -131,7 +133,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     ///
     /// assert_eq!(*request.vbucket_id(), 0);
     /// ```
@@ -146,7 +148,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     /// *request.vbucket_id_mut() = 5;
     ///
     /// assert_eq!(*request.vbucket_id(), 5);
@@ -162,7 +164,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     ///
     /// assert_eq!(*request.opaque(), 0);
     /// ```
@@ -177,7 +179,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     /// *request.opaque_mut() = 5;
     ///
     /// assert_eq!(*request.opaque(), 5);
@@ -193,7 +195,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     ///
     /// assert_eq!(*request.cas(), 0);
     /// ```
@@ -208,7 +210,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     /// *request.cas_mut() = 42;
     ///
     /// assert_eq!(*request.cas(), 42);
@@ -224,7 +226,7 @@ impl<K> Request<K> {
     /// ```
     /// use tokio_memcache::protocol::Request;
     ///
-    /// let mut request: Request<()> = Request::new();
+    /// let mut request = Request::new();
     ///
     /// assert!(request.extras().is_none());
     /// ```
@@ -255,26 +257,46 @@ impl<K> Request<K> {
         &mut self.extras
     }
 
-    pub fn key(&self) -> &Option<K> {
+//    pub fn key<K>(&self) -> &Option<K> {
+//        match self.key {
+//            None => &None,
+//            Some(ref bytes) => Some(serde_json::from_slice(bytes).unwrap()),
+//        }
+//    }
+
+    pub fn raw_key(&self) -> &Option<Vec<u8>> {
         &self.key
     }
 
-    pub fn key_mut(&mut self) -> &mut Option<K> {
-        &mut self.key
+    pub fn set_key<K>(&mut self, key: Option<K>) where K: Serialize {
+        self.key = match key {
+            None => None,
+            Some(ref object) => Some(serde_json::to_vec(object).unwrap()),
+        }
     }
 
-    pub fn value(&self) -> &Option<Vec<u8>> {
+//    pub fn value<V>(&self) -> &Option<V> where V: Deserialize<'de> {
+//        match self.key {
+//            None => &None,
+//            Some(ref bytes) => &Some(serde_json::from_slice(bytes).unwrap()),
+//        }
+//    }
+
+    pub fn raw_value(&self) -> &Option<Vec<u8>> {
         &self.value
     }
 
-    pub fn value_mut(&mut self) -> &mut Option<Vec<u8>> {
-        &mut self.value
+    pub fn set_value<V>(&mut self, value: Option<V>) where V: Serialize {
+        self.value = match value {
+            None => None,
+            Some(ref object) => Some(serde_json::to_vec(object).unwrap())
+        }
     }
 
 }
 
 
-impl<K> fmt::Debug for Request<K> where K: fmt::Debug {
+impl fmt::Debug for Request {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Request")
             .field("command", &self.opcode)
@@ -289,7 +311,7 @@ impl<K> fmt::Debug for Request<K> where K: fmt::Debug {
 }
 
 
-impl<K> default::Default for Request<K> {
+impl default::Default for Request {
     fn default() -> Self {
         Request {
             magic: Magic::Request,

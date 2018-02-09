@@ -5,10 +5,8 @@ use protocol::{Request, Response, Command};
 use io::handle::{ClientHandle, Result};
 
 
-impl<K> ClientHandle<K> where K: Serialize {
-
-    // TODO: Replace `Result` (which is a `Box<Future>`) with a `impl Future`
-    pub fn get(&self, key: K) -> Result<Response> {
+impl ClientHandle {
+    pub fn get<K>(&self, key: K) -> Result<Response> where K: Serialize {
         let request = Request::build(Command::Get)
             .key(Some(key))
             .finish();

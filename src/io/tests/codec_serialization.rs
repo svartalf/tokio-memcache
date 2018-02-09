@@ -3,6 +3,7 @@ use tokio_io::codec::Encoder;
 
 use io::MemcacheCodec;
 use protocol::{Request, Command, extras};
+use protocol::extras::Extras;
 
 macro_rules! encode_and_compare {
     ($request:ident, $bytes:ident) => {
@@ -17,7 +18,7 @@ macro_rules! encode_and_compare {
 
 #[test]
 fn test_get() {
-    let request = Request::build(Command::Get)
+    let request: Request = Request::build(Command::Get)
         .key(Some("Hello"))
         .finish();
 
@@ -35,31 +36,30 @@ fn test_get() {
     encode_and_compare!(request, expected);
 }
 
-//#[test]
-//fn test_set() {
-//    let request = Request::build(Command::Set)
-//        .key(Some(b"Hello".to_vec()))
-//        .value(Some(b"World".to_vec()))
-//        .extras(Some(extras::Set::default().to_vec()))
-//        .finish();
-//
-//    let expected: Vec<u8> = vec![
-//        0x80, 0x01, 0x00, 0x05,
-//        0x08, 0x00, 0x00, 0x00,
-//        0x00, 0x00, 0x00, 0x12,
-//        0x00, 0x00, 0x00, 0x00,
-//        0x00, 0x00, 0x00, 0x00,
-//        0x00, 0x00, 0x00, 0x00,
-//        0x00, 0x00, 0x00, 0x00,
-//        0x00, 0x00, 0x00, 0x00,
-//        0x48, 0x65, 0x6c, 0x6c,
-//        0x6f, 0x57, 0x6f, 0x72,
-//        0x6c, 0x64,
-//    ];
-//
-//    encode_and_compare!(request, expected);
-//}
-//
+#[test]
+fn test_set() {
+    let request = Request::build(Command::Set)
+        .key(Some("Hello"))
+        .value(Some("World"))
+        .extras(Some(extras::Set::default().to_vec()))
+        .finish();
+
+    let expected: Vec<u8> = vec![
+        0x80, 0x01, 0x00, 0x07,
+        0x08, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x16,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x22, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x22, // key
+        0x22, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x22, // value
+    ];
+
+    encode_and_compare!(request, expected);
+}
+
 //#[test]
 //fn test_delete() {
 //    let request = Request::build(Command::Delete)
@@ -82,7 +82,7 @@ fn test_get() {
 
 #[test]
 fn test_quit() {
-    let request: Request<()> = Request::build(Command::Quit)
+    let request: Request = Request::build(Command::Quit)
         .finish();
 
     let expected: Vec<u8> = vec![
@@ -99,7 +99,7 @@ fn test_quit() {
 
 #[test]
 fn test_noop() {
-    let request: Request<()> = Request::build(Command::Noop)
+    let request: Request = Request::build(Command::Noop)
         .finish();
 
     let expected: Vec<u8> = vec![
@@ -116,7 +116,7 @@ fn test_noop() {
 
 #[test]
 fn test_version() {
-    let request: Request<()> = Request::build(Command::Version)
+    let request: Request = Request::build(Command::Version)
         .finish();
 
     let expected: Vec<u8> = vec![

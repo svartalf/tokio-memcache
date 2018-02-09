@@ -30,3 +30,8 @@ Same way backwards, deserialization should be made automatically on the `conn.ge
 Unfortunately, I can't achieve it right now, though, `erased_serde` crate
 and this https://github.com/serde-rs/serde/issues/644 issue (when resolved)
 might help me with that issue. Until then, serde_bincode will be used as default and only encoder/decoder.
+
+# Generic arguments
+
+Apparently, I really need GAT to make generic incoming parameters properly:
+https://github.com/rust-lang/rust/issues/44265

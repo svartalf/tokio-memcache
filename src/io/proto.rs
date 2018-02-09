@@ -10,14 +10,12 @@ use super::codec::MemcacheCodec;
 use protocol::{Request, Response};
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct MemcacheProto<K> {
-    _key: PhantomData<K>,
+pub struct MemcacheProto {
 }
 
-impl<K> MemcacheProto<K> {
-    pub fn new() -> MemcacheProto<K> {
+impl MemcacheProto {
+    pub fn new() -> MemcacheProto {
         MemcacheProto {
-            _key: PhantomData,
         }
     }
 }
@@ -33,11 +31,11 @@ impl<K> MemcacheProto<K> {
 // for outstanding elements in the FIFO and, for each element,
 // return a fake response to the initiating future
 
-impl<K: 'static, T: AsyncRead + AsyncWrite + 'static> ClientProto<T> for MemcacheProto<K>
-        where K: Serialize {
-    type Request = Request<K>;
+impl<T> ClientProto<T> for MemcacheProto
+        where T: AsyncRead + AsyncWrite + 'static {
+    type Request = Request;
     type Response = Response;
-    type Transport = Framed<T, MemcacheCodec<K>>;
+    type Transport = Framed<T, MemcacheCodec>;
     type BindTransport = io::Result<Self::Transport>;
 
     fn bind_transport(&self, io: T) -> Self::BindTransport {

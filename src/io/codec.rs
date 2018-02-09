@@ -14,23 +14,20 @@ const HEADER_LENGTH: usize = 24;
 
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct MemcacheCodec<K> {
-    _key: PhantomData<K>,
+pub struct MemcacheCodec {
 }
 
-impl<K> Encoder for MemcacheCodec<K> where K: Serialize {
-    type Item = Request<K>;
+impl Encoder for MemcacheCodec {
+    type Item = Request;
     type Error = io::Error;
 
     fn encode(&mut self, item: Self::Item, dst: &mut BytesMut) -> Result<(), Self::Error> {
         // TODO: Handle lossless conversion
         // TODO: Seems not very efficient
-        let (key, key_length) = match *item.key() {
+        let (key, key_length) = match *item.raw_key() {
             None => (None, 0),
             Some(ref key) => {
-                let key_bytes = serde_json::to_vec(key)?;
-                let length = key_bytes.len();
-                (Some(key_bytes), length)
+                (Some(key), key.len() as u32)
             }
         };
 
@@ -38,9 +35,12 @@ impl<K> Encoder for MemcacheCodec<K> where K: Serialize {
             Some(ref extras) => extras.len() as u8,
             None => 0,
         };
-        let value_length = match *item.value() {
-            Some(ref value) => value.len() as u32,
-            None => 0,
+
+        let (value, value_length) = match *item.raw_value() {
+            None => (None, 0),
+            Some(ref value) => {
+                (Some(value), value.len() as u32)
+            }
         };
         let body_length: u32 = key_length as u32 + extras_length as u32 + value_length;
 
@@ -64,15 +64,15 @@ impl<K> Encoder for MemcacheCodec<K> where K: Serialize {
             dst.put_slice(&key);
         }
 
-        if let Some(ref value) = *item.value() {
-            dst.put_slice(value);
+        if let Some(ref value) = value {
+            dst.put_slice(&value);
         }
 
         Ok(())
     }
 }
 
-impl<K> Decoder for MemcacheCodec<K> {
+impl Decoder for MemcacheCodec {
     type Item = Response;
     type Error = io::Error;
 
@@ -97,10 +97,9 @@ impl<K> Decoder for MemcacheCodec<K> {
 
 }
 
-impl<K> MemcacheCodec<K> {
-    pub fn new() -> MemcacheCodec<K> {
+impl MemcacheCodec {
+    pub fn new() -> MemcacheCodec {
         MemcacheCodec {
-            _key: PhantomData,
         }
     }
 
