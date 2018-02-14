@@ -57,12 +57,12 @@ impl Encoder for MemcacheCodec {
             dst.put_slice(extras);
         }
 
-        if let Some(ref key) = key {
-            dst.put_slice(&key);
+        if let Some(key) = key {
+            dst.put_slice(key);
         }
 
-        if let Some(ref value) = value {
-            dst.put_slice(&value);
+        if let Some(value) = value {
+            dst.put_slice(value);
         }
 
         Ok(())

@@ -3,6 +3,7 @@ enum_from_primitive! {
     /// Available protocol commands
     ///
     /// Reference: <https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#command-opcodes>
+    #[repr(u8)]
     #[derive(Debug, PartialEq, Copy, Clone)]
     pub enum Command {
         Get = 0x00,

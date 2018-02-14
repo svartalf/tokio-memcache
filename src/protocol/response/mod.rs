@@ -4,6 +4,7 @@ use protocol::{Magic, Command, DataType};
 
 enum_from_primitive! {
     /// Response status variants
+    #[repr(u16)]
     #[derive(Debug, Copy, Clone, PartialEq)]
     pub enum Status {
         Ok = 0x0000,
