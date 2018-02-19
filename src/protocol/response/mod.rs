@@ -19,7 +19,7 @@ enum_from_primitive! {
         AuthenticationContinue = 0x0009,
         UnknownCommand = 0x0081,
         OutOfMemory = 0x0082,
-        NotSupported = 0x00083,
+        NotSupported = 0x0083,
         InternalError = 0x0084,
         Busy = 0x0085,
         TemporaryFailure = 0x0086,
