@@ -6,14 +6,14 @@ repository = "https://github.com/svartalf/tokio-memcache"
 authors = ["svartalf <self@svartalf.info>"]
 keywords = ["tokio", "futures", "memcache", "memcached"]
 categories = ["asynchronous", "caching"]
-license = "Apache-2.0"
+license = "MIT/Apache-2.0"
 
 [features]
 default = []
 nightly = []
 
 [dependencies]
-futures = "0.1.14"
+futures = "0.1.17"
 tokio-core = "0.1.11"
 tokio-service = "0.1.0"
 tokio-proto = "0.1.1"
