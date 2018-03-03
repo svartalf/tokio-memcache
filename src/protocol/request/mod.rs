@@ -10,8 +10,6 @@ mod builder;
 ///
 /// A Memcached request have optional key, value and extras fields.
 ///
-/// Key and value fields are generic and can be any type that implements `serde::Serialize` trait.
-///
 /// # Examples
 ///
 /// Creating a `Request` to send

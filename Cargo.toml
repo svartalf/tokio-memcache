@@ -21,11 +21,6 @@ tokio-io = "0.1.4"
 bytes = "0.4.5"
 byteorder = "1.2.1"
 enum_primitive = "0.1.1"
-serde = "^1.0"
-serde_json = "^1.0"
-
-[dev-dependencies]
-serde_derive = "1.0"
 
 [badges]
 travis-ci = { repository = "https://github.com/svartalf/tokio-memcache", branch = "master" }

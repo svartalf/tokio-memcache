@@ -1,5 +1,4 @@
-use serde::Serialize;
-use serde_json;
+use std::convert::AsRef;
 
 use protocol::{Request, Command};
 
@@ -37,18 +36,18 @@ impl Builder {
         self
     }
 
-    pub fn key<K>(mut self, key: Option<K>) -> Self where K: Serialize {
+    pub fn key<K>(mut self, key: Option<K>) -> Self where K: AsRef<[u8]> {
         *self.0.key_mut() = match key {
             None => None,
-            Some(ref key) => Some(serde_json::to_vec(key).unwrap()),
+            Some(ref key) => Some(key.as_ref().to_vec()),
         };
         self
     }
 
-    pub fn value<V>(mut self, value: Option<V>) -> Self where V: Serialize {
+    pub fn value<V>(mut self, value: Option<V>) -> Self where V: AsRef<[u8]> {
         *self.0.value_mut() = match value {
             None => None,
-            Some(ref value) => Some(serde_json::to_vec(value).unwrap())
+            Some(ref value) => Some(value.as_ref().to_vec())
         };
         self
     }
