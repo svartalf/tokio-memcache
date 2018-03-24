@@ -1,23 +1,46 @@
-use std::convert::From;
-use std::net::SocketAddr;
+use std::io;
+use std::net::{SocketAddr, ToSocketAddrs};
 
 use futures::Future;
-use tokio_core::reactor::Handle;
-use tokio_proto::TcpClient;
+use tokio::net::TcpStream;
+use tower::NewService;
 
-use super::{MemcacheProto, ClientHandle, Error};
+use io::errors::Error;
+use io::conn::Connection;
+use protocol::{Request, Response};
 
-pub struct Client {}
+#[derive(Debug, Copy, Clone)]
+pub struct Client {
+    addr: SocketAddr,
+}
 
 impl Client {
-    pub fn connect(addr: &SocketAddr, handle: &Handle) -> Box<Future<Item=ClientHandle, Error=Error>> {
-        let handle = TcpClient::new(MemcacheProto::new())
-            .connect(addr, handle)
-            .map_err(From::from)
-            .map(|client_service| {
-                ClientHandle::new(client_service)
-            });
-
-        Box::new(handle)
+    pub fn new<T: ToSocketAddrs>(addr: T) -> Client {
+        Client {
+            // TODO: Temporary
+            addr: addr.to_socket_addrs().unwrap().next().unwrap(),
+        }
     }
+
+//    #[inline]
+//    pub fn connect(&self) -> <Self as NewService>::Future {
+//        self.new_service()
+//    }
 }
+//
+//impl NewService for Client {
+//    type Request = Request;
+//    type Response = Response;
+//    type Error = Error;
+//    type Service = Connection;
+//    type InitError = io::Error;
+//    type Future = Box<Future<Item=Self::Service, Error=Self::InitError>>;
+//
+//    fn new_service(&self) -> <Self as NewService>::Future {
+//        let future = TcpStream::connect(&self.addr).and_then(|stream| {
+//            Ok(Connection::new(stream))
+//        });
+//
+//        Box::new(future)
+//    }
+//}
