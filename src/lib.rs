@@ -1,6 +1,6 @@
 #![allow(dead_code)] // TODO: Temporary, during `io` module rewrite
 
-extern crate futures;
+#[macro_use] extern crate futures;
 extern crate tokio;
 extern crate tokio_io;
 extern crate tower;

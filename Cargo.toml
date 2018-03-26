@@ -14,7 +14,7 @@ nightly = []
 
 [dependencies]
 # Awaiting for futures==0.2
-futures = { git = "https://github.com/rust-lang-nursery/futures-rs" }
+futures = "0.1.19"
 tokio = { version = "0.1.4", features = ["unstable-futures"] }
 tokio-io = "0.1.6"
 bytes = "0.4.6"
