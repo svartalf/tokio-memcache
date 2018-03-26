@@ -2,7 +2,6 @@ use std::io::{self, Read};
 
 use bytes::{BytesMut, BufMut};
 use byteorder::{NetworkEndian, ReadBytesExt};
-use tokio_io::codec::{Encoder, Decoder};
 use enum_primitive::FromPrimitive;
 
 use protocol::{Request, Response, Magic, Command, DataType, Status};
@@ -13,11 +12,9 @@ const HEADER_LENGTH: usize = 24;
 #[derive(Debug, Copy, Clone)]
 pub struct MemcacheCodec;
 
-impl Encoder for MemcacheCodec {
-    type Item = Request;
-    type Error = io::Error;
+impl MemcacheCodec {
 
-    fn encode(&mut self, item: Self::Item, dst: &mut BytesMut) -> Result<(), Self::Error> {
+    pub fn encode(item: &Request, dst: &mut BytesMut) -> Result<(), io::Error> {
         // TODO: Handle lossless conversion
         // TODO: Seems not very efficient
         let (key, key_length) = match *item.key() {
@@ -66,13 +63,8 @@ impl Encoder for MemcacheCodec {
 
         Ok(())
     }
-}
 
-impl Decoder for MemcacheCodec {
-    type Item = Response;
-    type Error = io::Error;
-
-    fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+    pub fn decode(src: &mut BytesMut) -> Result<Option<Response>, io::Error> {
         let mut cursor = io::Cursor::new(src);
         let magic = cursor.read_u8()?;
         if magic != Magic::Response as u8 {
