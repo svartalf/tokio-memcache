@@ -8,9 +8,8 @@ use protocol::extras::Extras;
 macro_rules! encode_and_compare {
     ($request:ident, $bytes:ident) => {
         let mut output = BytesMut::new();
-        let mut codec = MemcacheCodec::new();
 
-        let result = codec.encode($request, &mut output);
+        let result = MemcacheCodec::encode($request, &mut output);
         assert!(result.is_ok());
         assert_eq!(output, $bytes);
     };

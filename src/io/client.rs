@@ -22,25 +22,25 @@ impl Client {
         }
     }
 
-//    #[inline]
-//    pub fn connect(&self) -> <Self as NewService>::Future {
-//        self.new_service()
-//    }
+    #[inline]
+    pub fn connect(&self) -> <Self as NewService>::Future {
+        self.new_service()
+    }
 }
-//
-//impl NewService for Client {
-//    type Request = Request;
-//    type Response = Response;
-//    type Error = Error;
-//    type Service = Connection;
-//    type InitError = io::Error;
-//    type Future = Box<Future<Item=Self::Service, Error=Self::InitError>>;
-//
-//    fn new_service(&self) -> <Self as NewService>::Future {
-//        let future = TcpStream::connect(&self.addr).and_then(|stream| {
-//            Ok(Connection::new(stream))
-//        });
-//
-//        Box::new(future)
-//    }
-//}
+
+impl NewService for Client {
+    type Request = Request;
+    type Response = Response;
+    type Error = Error;
+    type Service = Connection;
+    type InitError = io::Error;
+    type Future = Box<Future<Item=Self::Service, Error=Self::InitError>>;
+
+    fn new_service(&self) -> <Self as NewService>::Future {
+        let future = TcpStream::connect(&self.addr).and_then(|stream| {
+            Ok(Connection::new(stream))
+        });
+
+        Box::new(future)
+    }
+}

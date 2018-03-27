@@ -1,4 +1,5 @@
 use std::io;
+use std::convert::From;
 
 use tokio::prelude::*;
 use tokio::net::TcpStream;
@@ -6,18 +7,17 @@ use tower::Service;
 use bytes::BytesMut;
 
 use io::errors::Error;
-use io::codec::MemcacheCodec;
 use protocol::{Request, Response};
 
 mod sink;
 mod stream;
+mod interface;
 
 #[derive(Debug)]
 pub struct Connection {
     socket: TcpStream,
     rd: BytesMut,
     wr: BytesMut,
-    codec: MemcacheCodec,
 }
 
 impl Connection {
@@ -26,7 +26,6 @@ impl Connection {
             socket: socket,
             rd: BytesMut::new(),
             wr: BytesMut::new(),
-            codec: MemcacheCodec,
         }
     }
 
@@ -66,7 +65,9 @@ impl Service for Connection {
         Ok(Async::Ready(()))
     }
 
-    fn call(&mut self, _req: <Self as Service>::Request) -> <Self as Service>::Future {
-        unimplemented!()
+    fn call(&mut self, req: <Self as Service>::Request) -> <Self as Service>::Future {
+        let f = self.send(req).map_err(From::from);
+
+        Box::new(f)
     }
 }

@@ -8,6 +8,6 @@ extern crate byteorder;
 #[macro_use] extern crate enum_primitive;
 
 mod io;
-mod protocol;
+pub mod protocol;
 
 pub use io::client::Client;
