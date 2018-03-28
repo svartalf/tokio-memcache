@@ -1,3 +1,5 @@
 use super::Connection;
 
-impl Connection {}
+impl Connection {
+
+}

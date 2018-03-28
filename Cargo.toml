@@ -15,6 +15,7 @@ nightly = []
 [dependencies]
 futures = "0.1.19"
 tokio = { version = "0.1.4", features = ["unstable-futures"] }
+tokio-io = "0.1.6"
 bytes = "0.4.6"
 byteorder = "1.2.1"
 enum_primitive = "0.1.1"
