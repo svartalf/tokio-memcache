@@ -2,11 +2,12 @@ use std::io;
 use std::net::{SocketAddr, ToSocketAddrs};
 
 use futures::Future;
+use futures::sync::oneshot;
 use tokio::net::TcpStream;
 use tower::NewService;
 
 use io::errors::Error;
-use io::conn::Connection;
+use io::conn::{Connection, ResponseFuture};
 use protocol::{Request, Response};
 
 #[derive(Debug, Copy, Clone)]
